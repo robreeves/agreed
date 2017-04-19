@@ -1,2 +1,2 @@
 # Agreed
-A general consistency service based on Paxos
+A general consensus service based on Paxos

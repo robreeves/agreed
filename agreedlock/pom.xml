@@ -34,6 +34,10 @@
             <artifactId>agreed-core</artifactId>
             <version>1.0</version>
         </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

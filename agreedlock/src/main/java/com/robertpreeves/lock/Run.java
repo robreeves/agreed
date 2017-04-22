@@ -11,7 +11,7 @@ public class Run {
         AgreedNode<LockState> agreeNode = AgreedNodeFactory.create(Arrays.asList(new
                 AgreedNodeEndpoint("localhost", 8111, 1)));
 
-        LockNode lockNode = new LockNode(agreeNode);
+        //LockNode lockNode = new LockNode(agreeNode);
 
         try {
             //run forever

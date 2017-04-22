@@ -6,7 +6,26 @@
 
     <groupId>com.robertpreeves</groupId>
     <artifactId>agreed-core</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
+    <parent>
+        <groupId>com.robertpreeves</groupId>
+        <artifactId>agreed</artifactId>
+        <version>1.0</version>
+    </parent>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <inherited>false</inherited>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

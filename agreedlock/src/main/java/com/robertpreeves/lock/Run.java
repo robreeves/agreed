@@ -9,7 +9,7 @@ import java.util.Arrays;
 public class Run {
     public static void main(String[] args) {
         AgreedNode<LockState> agreeNode = AgreedNodeFactory.create(Arrays.asList(new
-                AgreedNodeEndpoint("localhost", 8111)));
+                AgreedNodeEndpoint("localhost", 8111, 1)));
 
         LockNode lockNode = new LockNode(agreeNode);
 

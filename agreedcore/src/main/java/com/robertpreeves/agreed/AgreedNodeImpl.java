@@ -10,9 +10,9 @@ import java.util.List;
 
 class AgreedNodeImpl<T> implements AgreedNode<T> {
     private static final Logger logger = LogManager.getLogger(AgreedNodeImpl.class);
-    private List<Observer<T>> observers = new ArrayList<Observer<T>>();
+    private List<Observer<T>> consensusObservers = new ArrayList<>();
 
-    public AgreedNodeImpl(List<AgreedNodeEndpoint> otherNodes) {
+    public AgreedNodeImpl(byte thisNodeId, List<AgreedNodeEndpoint> nodes) {
         //todo
 
         logger.info("test info");
@@ -24,7 +24,7 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
         /*todo
         1. connect to all other nodes
         2. do paxos stuff
-        3.notify observers
+        3.notify consensusObservers
          */
     }
 
@@ -34,10 +34,10 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
      */
     @Override
     public void subscribe(Observer<T> observer) {
-        observers.add(observer);
+        consensusObservers.add(observer);
     }
 
     private void notify(final T value) {
-        observers.forEach(observer -> observer.notify(value));
+        consensusObservers.forEach(observer -> observer.notify(value));
     }
 }

@@ -3,15 +3,11 @@ package com.robertpreeves.agreed;
 public class AgreedNodeEndpoint {
     private final String hostname;
     private final int port;
-    private final int priority;
+    private final byte nodeId;
 
-    public AgreedNodeEndpoint(String hostname, int port, int priority) {
+    public AgreedNodeEndpoint(String hostname, int port, byte nodeId) {
         this.hostname = hostname;
         this.port = port;
-        this.priority = priority;
-    }
-
-    public String getId() {
-        return String.format("%s:%s", hostname, port);
+        this.nodeId = nodeId;
     }
 }

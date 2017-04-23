@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 public class Run {
     public static void main(String[] args) {
-        StatusLogger.getLogger().setLevel(Level.DEBUG);
+        //StatusLogger.getLogger().setLevel(Level.DEBUG);
 
         AgreedNode<LockState> agreeNode = AgreedNodeFactory.create(Arrays.asList(new
                 AgreedNodeEndpoint("localhost", 8111, 1)));

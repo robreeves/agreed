@@ -15,7 +15,8 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
     public AgreedNodeImpl(List<AgreedNodeEndpoint> otherNodes) {
         //todo
 
-        logger.info("test");
+        logger.info("test info");
+        logger.error("test error");
     }
 
     @Override

@@ -12,12 +12,12 @@ import java.util.Map;
 class AgreedNodeImpl<T> implements AgreedNode<T> {
     private static final Logger logger = LogManager.getLogger(AgreedNodeImpl.class);
     private List<Observer<T>> consensusObservers = new ArrayList<>();
-    private final byte thisNodeId;
-    private final Map<Byte, AgreedNodeEndpoint> otherNodes;
+    private final int thisNodeIndex;
+    private final List<AgreedNodeEndpoint> nodes;
 
-    public AgreedNodeImpl(byte thisNodeId, AgreedNodeEndpoint thisNodeEndpoint, Map<Byte, AgreedNodeEndpoint> otherNodes) {
-        this.thisNodeId = thisNodeId;
-        this.otherNodes = otherNodes;
+    public AgreedNodeImpl(int thisNodeIndex, List<AgreedNodeEndpoint> nodes) {
+        this.thisNodeIndex = thisNodeIndex;
+        this.nodes = nodes;
 
         //todo start listening on supplied port
     }

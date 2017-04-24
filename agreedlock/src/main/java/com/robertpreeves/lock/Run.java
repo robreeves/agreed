@@ -8,14 +8,17 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.status.StatusLogger;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class Run {
     public static void main(String[] args) {
-        Map<Byte, >
-
-        AgreedNode<LockState> agreeNode = AgreedNodeFactory.create(
-
+        List<AgreedNodeEndpoint> nodes = Arrays.asList(
+                new AgreedNodeEndpoint("localhost", 8111),
+                new AgreedNodeEndpoint("localhost", 8112),
+                new AgreedNodeEndpoint("localhost", 8113)
         );
+
+        AgreedNode<LockState> agreeNode = AgreedNodeFactory.create(0, nodes);
 
         //A lock subscriber will subscribe to the agreeNode
         //It will be responsible for maintaining all lock states

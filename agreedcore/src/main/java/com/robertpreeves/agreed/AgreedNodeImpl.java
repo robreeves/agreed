@@ -7,16 +7,19 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 class AgreedNodeImpl<T> implements AgreedNode<T> {
     private static final Logger logger = LogManager.getLogger(AgreedNodeImpl.class);
     private List<Observer<T>> consensusObservers = new ArrayList<>();
+    private final byte thisNodeId;
+    private final Map<Byte, AgreedNodeEndpoint> otherNodes;
 
-    public AgreedNodeImpl(byte thisNodeId, List<AgreedNodeEndpoint> nodes) {
-        //todo
+    public AgreedNodeImpl(byte thisNodeId, AgreedNodeEndpoint thisNodeEndpoint, Map<Byte, AgreedNodeEndpoint> otherNodes) {
+        this.thisNodeId = thisNodeId;
+        this.otherNodes = otherNodes;
 
-        logger.info("test info");
-        logger.error("test error");
+        //todo start listening on supplied port
     }
 
     @Override
@@ -39,5 +42,9 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
 
     private void notify(final T value) {
         consensusObservers.forEach(observer -> observer.notify(value));
+    }
+
+    private void logMembership() {
+
     }
 }

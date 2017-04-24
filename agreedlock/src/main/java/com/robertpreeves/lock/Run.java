@@ -11,10 +11,11 @@ import java.util.Arrays;
 
 public class Run {
     public static void main(String[] args) {
-        //StatusLogger.getLogger().setLevel(Level.DEBUG);
+        Map<Byte, >
 
-        AgreedNode<LockState> agreeNode = AgreedNodeFactory.create(Arrays.asList(new
-                AgreedNodeEndpoint("localhost", 8111, 1)));
+        AgreedNode<LockState> agreeNode = AgreedNodeFactory.create(
+
+        );
 
         //A lock subscriber will subscribe to the agreeNode
         //It will be responsible for maintaining all lock states

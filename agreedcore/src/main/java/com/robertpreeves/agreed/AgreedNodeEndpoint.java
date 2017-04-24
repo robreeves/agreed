@@ -10,6 +10,10 @@ public class AgreedNodeEndpoint {
         this.port = port;
     }
 
+    public int getPort() {
+        return port;
+    }
+
     @Override
     public String toString() {
         return String.format("%s:%s", hostname, port);

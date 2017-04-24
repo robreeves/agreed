@@ -25,7 +25,7 @@ public class AgreedNodeFactory {
             throw new IllegalArgumentException("Node index is invalid");
         }
 
-        Logger logger = LogManager.getLogger(AgreedNodeImpl.class);
+        Logger logger = LogManager.getLogger(AgreedNodeFactory.class);
         nodes.forEach(node -> logger.info("Known node {}", node));
         logger.info("Creating node at index {}", thisNodeIndex);
 

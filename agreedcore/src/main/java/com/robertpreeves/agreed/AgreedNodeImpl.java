@@ -1,12 +1,15 @@
 package com.robertpreeves.agreed;
 
 import com.robertpreeves.agreed.observer.Observer;
+import com.robertpreeves.agreed.paxos.PaxosServer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import spark.Spark;
 
 class AgreedNodeImpl<T> implements AgreedNode<T> {
     private static final Logger logger = LogManager.getLogger(AgreedNodeImpl.class);
@@ -18,7 +21,13 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
         this.thisNodeIndex = thisNodeIndex;
         this.nodes = nodes;
 
-        //todo start listening on supplied port
+        int port = nodes.get(thisNodeIndex).getPort();
+        Spark.port(port);
+        String uri = "/agreed";
+        Spark.webSocket(uri, PaxosServer.class);
+        Spark.init();
+        Spark.awaitInitialization();
+        logger.info("Listening on {} port {}", uri, port);
     }
 
     @Override

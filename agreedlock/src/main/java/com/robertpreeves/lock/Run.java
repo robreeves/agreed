@@ -35,11 +35,11 @@ public class Run {
 
         //LockNode lockNode = new LockNode(agreeNode);
 
-//        try {
-//            //run forever
-//            Thread.currentThread().join();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            //run forever
+            Thread.currentThread().join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

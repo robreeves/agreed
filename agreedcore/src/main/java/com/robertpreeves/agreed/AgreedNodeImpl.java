@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 class AgreedNodeImpl<T> implements AgreedNode<T> {
     private static final Logger logger = LogManager.getLogger(AgreedNodeImpl.class);

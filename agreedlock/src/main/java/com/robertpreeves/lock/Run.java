@@ -35,7 +35,7 @@ public class Run {
 
         //LockNode lockNode = new LockNode(agreeNode);
 
-        PublicApi api = new PublicApi(8080);
+        PublicApi api = new PublicApi(8080, agreeNode);
 
         try {
             //run forever

@@ -9,7 +9,9 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-import spark.Spark;
+import spark.Service;
+
+import static spark.Service.ignite;
 
 class AgreedNodeImpl<T> implements AgreedNode<T> {
     private static final Logger logger = LogManager.getLogger(AgreedNodeImpl.class);
@@ -22,11 +24,15 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
         this.nodes = nodes;
 
         int port = nodes.get(thisNodeIndex).getPort();
-        Spark.port(port);
+        initWebSocketsServer(port);
+    }
+
+    private void initWebSocketsServer(int port) {
+        Service ws = ignite().port(port);
         String uri = "/agreed";
-        Spark.webSocket(uri, PaxosServer.class);
-        Spark.init();
-        Spark.awaitInitialization();
+        ws.webSocket(uri, PaxosServer.class);
+        ws.init();
+        ws.awaitInitialization();
         logger.info("Listening on {} port {}", uri, port);
     }
 

@@ -1,5 +1,6 @@
 package com.robertpreeves.lock;
 
+import com.beust.jcommander.JCommander;
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.AgreedNodeEndpoint;
 import com.robertpreeves.agreed.AgreedNodeFactory;
@@ -12,6 +13,19 @@ import java.util.List;
 
 public class Run {
     public static void main(String[] args) {
+        CommandLine cli = new CommandLine();
+        JCommander cliParser = JCommander.newBuilder()
+                .addObject(cli)
+                .build();
+        cliParser.setProgramName(Run.class.getCanonicalName());
+        cliParser.parse(args);
+
+        if (cli.showHelp()) {
+            cliParser.usage();
+            return;
+        }
+
+
         List<AgreedNodeEndpoint> nodes = Arrays.asList(
                 new AgreedNodeEndpoint("localhost", 8111),
                 new AgreedNodeEndpoint("localhost", 8112),

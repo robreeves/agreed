@@ -5,10 +5,9 @@ package com.robertpreeves.agreed.paxos;
  * The sequence number is a long where bits 7-0 represent the node Id.
  * This is used to ensure that the sequence number is unique.
  * Bits 63-8 represent the monotonically increasing round number.
- * The round number increases by the total node count.
  * This ensures that the sequence number is always greater than previous sequence numbers.
  *
- * The total number of rounds is (2^56)/nodeCount.
+ * The total number of rounds is 2^56.
  *
  * Example:
  * 3 nodes in the group (ids 1,2,3).
@@ -19,13 +18,13 @@ package com.robertpreeves.agreed.paxos;
  * Sequence Number: 0-00000001 (1)
  *
  * Node 3 is proposer
- * Sequence Number: 11-00000011 (771)
+ * Sequence Number: 1-00000011 (259)
  *
  * Node 3 is proposer
- * Sequence Number: 110-00000011 (1539)
+ * Sequence Number: 10-00000011 (515)
  *
  * Node 2 is proposer
- * Sequence Number: 1001-00000010 (2306)
+ * Sequence Number: 11-00000010 (770)
  *
  */
 class SequenceNumber {
@@ -48,15 +47,14 @@ class SequenceNumber {
     /**
      * Calculates the next sequence number to use
      * @param nodeId The proposer node Id
-     * @param nodeCount The total number of nodes in the group
      * @return The next sequence number to use during a proposal. This is an unsigned long.
      */
-    public long getNext(byte nodeId, int nodeCount) {
+    public long getNext(byte nodeId) {
         //get current round number
         long nextSequenceNumber = sequenceNumber >> NODEID_OFFSET;
 
         //increment round number
-        nextSequenceNumber += nodeCount;
+        ++nextSequenceNumber;
         if (Long.compareUnsigned(nextSequenceNumber, MAX_ROUND) > 0) {
             throw new IllegalStateException("The sequence number has exceeded the maximum value that it can represent");
         }

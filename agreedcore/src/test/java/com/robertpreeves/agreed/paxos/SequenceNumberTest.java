@@ -8,32 +8,28 @@ public class SequenceNumberTest {
     @Test
     public void nextSequenceNumberTest() {
         //third round, node 3, 3 nodes total
-        long sequenceStart = 1539;
+        long sequenceStart = 515;
         SequenceNumber sequenceNumber = new SequenceNumber(sequenceStart);
         Assert.assertEquals(sequenceStart, sequenceNumber.getSequenceNumber());
 
-        //before next, round number is 6
-        //after next, it should be 6 + nodeCount
         byte nodeId = 2;
-        int nodeCount = 3;
-        long nextSequence = sequenceNumber.getNext(nodeId, nodeCount);
+        long nextSequence = sequenceNumber.getNext(nodeId);
 
-        Assert.assertEquals(2306, nextSequence);
+        Assert.assertEquals(770, nextSequence);
     }
 
     @Test public void outOfRangeTest() {
         byte nodeId = 1;
-        int nodeCount = 3;
-        long startingRound = (Long.MAX_VALUE >> Byte.SIZE) - 5;
+        long startingRound = (Long.MAX_VALUE >> Byte.SIZE) - 1;
         long startingSequenceNumber = startingRound << Byte.SIZE | nodeId;
         SequenceNumber sequenceNumber = new SequenceNumber(startingSequenceNumber);
 
         //in range
-        long nextSeqNumber = sequenceNumber.getNext(nodeId, nodeCount);
+        long nextSeqNumber = sequenceNumber.getNext(nodeId);
 
         //out of range
         SequenceNumber seqNumberLastInRange = new SequenceNumber(nextSeqNumber);
-        assertThatThrownBy(() -> seqNumberLastInRange.getNext(nodeId, nodeCount))
+        assertThatThrownBy(() -> seqNumberLastInRange.getNext(nodeId))
                 .isInstanceOf(IllegalStateException.class);
     }
 }

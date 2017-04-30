@@ -18,13 +18,15 @@ public class PaxosNode<T> implements AgreedNode<T>, PaxosAcceptor {
     private static final Logger logger = LogManager.getLogger(PaxosNode.class);
     private List<Observer<T>> consensusObservers = new ArrayList<>();
     private final PaxosAcceptor acceptorsProxy;
+    private final Log<T> log;
 
-    public PaxosNode(PaxosAcceptor acceptorsProxy) {
+    public PaxosNode(PaxosAcceptor acceptorsProxy, Log<T> log) {
         this.acceptorsProxy = acceptorsProxy;
+        this.log = log;
     }
 
     @Override
-    public void propose(T value) {
+    public synchronized void propose(T value) {
         //prepare message
         Prepare prepare = new Prepare();
         Promise promise = acceptorsProxy.prepare(prepare);
@@ -41,7 +43,7 @@ public class PaxosNode<T> implements AgreedNode<T>, PaxosAcceptor {
         //todo check commit response
 
         //todo notify observers after commit
-        notify(value);
+        consensusObservers.forEach(observer -> observer.notify(value));
     }
 
     /**
@@ -50,26 +52,23 @@ public class PaxosNode<T> implements AgreedNode<T>, PaxosAcceptor {
      * @param observer The object to notify when consensus is reached
      */
     @Override
-    public void subscribe(Observer<T> observer) {
+    public synchronized void subscribe(Observer<T> observer) {
         consensusObservers.add(observer);
-    }
-
-    private void notify(final T value) {
-        consensusObservers.forEach(observer -> observer.notify(value));
+        log.replay(observer::notify);
     }
 
     @Override
-    public Promise prepare(Prepare prepare) {
+    public synchronized Promise prepare(Prepare prepare) {
         return new Promise();
     }
 
     @Override
-    public Accepted accept(Accept accept) {
+    public synchronized Accepted accept(Accept accept) {
         return new Accepted();
     }
 
     @Override
-    public Boolean commit(Commit commit) {
+    public synchronized Boolean commit(Commit commit) {
         return true;
     }
 }

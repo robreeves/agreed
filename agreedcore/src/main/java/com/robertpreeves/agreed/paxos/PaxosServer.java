@@ -16,6 +16,8 @@ import java.io.IOException;
 public class PaxosServer {
     private static final Logger logger = LogManager.getLogger(PaxosServer.class);
 
+
+
     @OnWebSocketConnect
     public void connected(Session session) {
         logger.info("Connected {}", session.getRemoteAddress());

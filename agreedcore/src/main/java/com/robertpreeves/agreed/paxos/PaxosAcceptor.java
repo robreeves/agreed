@@ -8,6 +8,8 @@ import com.robertpreeves.agreed.paxos.messages.Promise;
 
 public interface PaxosAcceptor {
     Promise prepare(Prepare prepare);
+
     Accepted accept(Accept accept);
-    void commit(Commit commit);
+
+    Boolean commit(Commit commit);
 }

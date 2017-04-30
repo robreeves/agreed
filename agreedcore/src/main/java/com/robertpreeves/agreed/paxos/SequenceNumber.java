@@ -25,7 +25,6 @@ package com.robertpreeves.agreed.paxos;
  *
  * Node 2 is proposer
  * Sequence Number: 11-00000010 (770)
- *
  */
 class SequenceNumber {
     private static final int NODEID_OFFSET = Byte.SIZE;
@@ -38,6 +37,7 @@ class SequenceNumber {
 
     /**
      * Gets the current sequence number
+     *
      * @return The sequence number as an unsigned long
      */
     public long getSequenceNumber() {
@@ -46,6 +46,7 @@ class SequenceNumber {
 
     /**
      * Calculates the next sequence number to use
+     *
      * @param nodeId The proposer node Id
      * @return The next sequence number to use during a proposal. This is an unsigned long.
      */
@@ -56,7 +57,8 @@ class SequenceNumber {
         //increment round number
         ++nextSequenceNumber;
         if (Long.compareUnsigned(nextSequenceNumber, MAX_ROUND) > 0) {
-            throw new IllegalStateException("The sequence number has exceeded the maximum value that it can represent");
+            throw new IllegalStateException("The sequence number has exceeded the maximum value " +
+                    "that it can represent");
         }
 
         //append nodeId bits

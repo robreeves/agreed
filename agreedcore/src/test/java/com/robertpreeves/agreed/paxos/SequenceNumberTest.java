@@ -2,7 +2,8 @@ package com.robertpreeves.agreed.paxos;
 
 import org.junit.Assert;
 import org.junit.Test;
-import static org.assertj.core.api.Assertions.*;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class SequenceNumberTest {
     @Test
@@ -18,7 +19,8 @@ public class SequenceNumberTest {
         Assert.assertEquals(770, nextSequence);
     }
 
-    @Test public void outOfRangeTest() {
+    @Test
+    public void outOfRangeTest() {
         byte nodeId = 1;
         long startingRound = (Long.MAX_VALUE >> Byte.SIZE) - 1;
         long startingSequenceNumber = startingRound << Byte.SIZE | nodeId;

@@ -1,7 +1,7 @@
-package com.robertpreeves.agreed;
+package com.robertpreeves.agreed.paxos;
 
+import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.observer.Observer;
-import com.robertpreeves.agreed.paxos.PaxosAcceptor;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Commit;
@@ -14,12 +14,12 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-class AgreedNodeImpl<T> implements AgreedNode<T> {
-    private static final Logger logger = LogManager.getLogger(AgreedNodeImpl.class);
+public class PaxosNode<T> implements AgreedNode<T>, PaxosAcceptor {
+    private static final Logger logger = LogManager.getLogger(PaxosNode.class);
     private List<Observer<T>> consensusObservers = new ArrayList<>();
     private final PaxosAcceptor acceptorsProxy;
 
-    public AgreedNodeImpl(PaxosAcceptor acceptorsProxy) {
+    public PaxosNode(PaxosAcceptor acceptorsProxy) {
         this.acceptorsProxy = acceptorsProxy;
     }
 
@@ -46,6 +46,7 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
 
     /**
      * Subscribes to consensus notifications
+     *
      * @param observer The object to notify when consensus is reached
      */
     @Override
@@ -55,5 +56,20 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
 
     private void notify(final T value) {
         consensusObservers.forEach(observer -> observer.notify(value));
+    }
+
+    @Override
+    public Promise prepare(Prepare prepare) {
+        return new Promise();
+    }
+
+    @Override
+    public Accepted accept(Accept accept) {
+        return new Accepted();
+    }
+
+    @Override
+    public Boolean commit(Commit commit) {
+        return true;
     }
 }

@@ -44,23 +44,7 @@ public class PublicApi {
                 .port(port);
 
         //post an update to a file
-        http.post(String.format("/api/file/%s/%s", FILE_PARAM, CONTENT_PARAM), (request,
-                response) -> {
-            String fileName = request.params(FILE_PARAM);
-            FileLock lock = lock(fileName);
-            if (lock != null) {
-                try {
-                    response.type(MIME_JSON);
-                    return postToFile(fileName, request.params(CONTENT_PARAM));
-                }
-                finally {
-                    unlock(lock);
-                }
-            } else {
-                response.status(503); //todo
-                return null;
-            }
-        }, GSON::toJson);
+        http.post(String.format("/api/file/%s/%s", FILE_PARAM, CONTENT_PARAM), this::updateFile);
 
         //get file content
         http.get(String.format("/api/file/%s", FILE_PARAM), this::readFile);
@@ -133,10 +117,6 @@ public class PublicApi {
         }
     }
 
-    private interface RequestHandler {
-        Object handle(String fileName, Request request, Response response);
-    }
-
     private Object readFile(Request request, Response response) {
         return lockedInvoke(request, response, (req, res, fileName) -> {
             //set response content type
@@ -155,11 +135,20 @@ public class PublicApi {
         });
     }
 
-    private UpdateFileResponse postToFile(String fileName, String content) {
-        return new UpdateFileResponse(fileName, content);
+    private Object updateFile(Request request, Response response) {
+        return lockedInvoke(request, response, (req, res, fileName) -> {
+           //todo update file
+
+            response.status(200);
+            return "updated";
+        });
     }
 
     private void lockUpdate(FileLock lockUpdate) {
 
+    }
+
+    private interface RequestHandler {
+        Object handle(String fileName, Request request, Response response);
     }
 }

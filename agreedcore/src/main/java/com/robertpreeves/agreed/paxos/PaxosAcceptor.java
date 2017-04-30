@@ -5,7 +5,7 @@ import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
-public interface PaxosAcceptor {
+public interface PaxosAcceptor<T> {
     Promise prepare(Prepare prepare);
 
     Accepted accept(Accept accept);

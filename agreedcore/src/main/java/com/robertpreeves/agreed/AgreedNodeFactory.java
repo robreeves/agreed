@@ -1,9 +1,10 @@
 package com.robertpreeves.agreed;
 
-import com.robertpreeves.agreed.paxos.MemoryLog;
+import com.robertpreeves.agreed.paxos.LocalPaxosAcceptor;
+import com.robertpreeves.agreed.paxos.PaxosAcceptor;
 import com.robertpreeves.agreed.paxos.PaxosAcceptorsProxy;
 import com.robertpreeves.agreed.paxos.PaxosHttpAcceptor;
-import com.robertpreeves.agreed.paxos.PaxosNode;
+import com.robertpreeves.agreed.paxos.PaxosProposer;
 
 import java.util.Set;
 
@@ -17,8 +18,11 @@ public class AgreedNodeFactory {
             throw new IllegalArgumentException("There must be at least three nodes");
         }
 
-        PaxosNode<T> node = new PaxosNode<>(new PaxosAcceptorsProxy(otherNodes), new MemoryLog());
-        PaxosHttpAcceptor<T> acceptorSvc = new PaxosHttpAcceptor<>(port, node);
-        return acceptorSvc.getNode();
+        PaxosAcceptor localAcceptor = new LocalPaxosAcceptor();
+        PaxosAcceptor acceptorsProxy = new PaxosAcceptorsProxy(localAcceptor, otherNodes);
+        PaxosHttpAcceptor<T> acceptorSvc = new PaxosHttpAcceptor<>(port, localAcceptor);
+        PaxosProposer<T> localProposer = new PaxosProposer<>(acceptorsProxy);
+
+        return localProposer;
     }
 }

@@ -20,11 +20,11 @@ public class PaxosHttpAcceptor<T> {
     private static final Logger LOGGER = LogManager.getLogger(PaxosHttpAcceptor.class);
     private static final Gson GSON = new Gson();
     private static final String MIME_JSON = "application/json";
-    private final PaxosNode<T> node;
+    private final PaxosAcceptor<T> acceptor;
     private final Service httpSvr = Service.ignite();
 
-    public PaxosHttpAcceptor(int port, PaxosNode<T> node) {
-        this.node = node;
+    public PaxosHttpAcceptor(int port, PaxosAcceptor<T> acceptor) {
+        this.acceptor = acceptor;
         initServer(port);
     }
 
@@ -32,11 +32,11 @@ public class PaxosHttpAcceptor<T> {
         httpSvr.port(port);
 
         httpSvr.post(Uris.PREPARE, MIME_JSON, (request, response) ->
-                        process(request, response, Prepare.class, node::prepare),
+                        process(request, response, Prepare.class, acceptor::prepare),
                 GSON::toJson);
 
         httpSvr.post(Uris.ACCEPT, MIME_JSON, (request, response) ->
-                        process(request, response, Accept.class, node::accept),
+                        process(request, response, Accept.class, acceptor::accept),
                 GSON::toJson);
 
         httpSvr.awaitInitialization();
@@ -62,9 +62,5 @@ public class PaxosHttpAcceptor<T> {
             response.status(400);
             return String.format("Invalid JSON for input type %s", inClass.getSimpleName());
         }
-    }
-
-    public PaxosNode<T> getNode() {
-        return node;
     }
 }

@@ -13,15 +13,13 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PaxosNode<T> implements AgreedNode<T>, PaxosAcceptor {
-    private static final Logger logger = LogManager.getLogger(PaxosNode.class);
+public class PaxosProposer<T> implements AgreedNode<T> {
+    private static final Logger LOGGER = LogManager.getLogger(PaxosProposer.class);
     private List<Observer<T>> consensusObservers = new ArrayList<>();
     private final PaxosAcceptor acceptorsProxy;
-    private final Log<T> log;
 
-    public PaxosNode(PaxosAcceptor acceptorsProxy, Log<T> log) {
+    public PaxosProposer(PaxosAcceptor acceptorsProxy) {
         this.acceptorsProxy = acceptorsProxy;
-        this.log = log;
     }
 
     @Override
@@ -48,16 +46,5 @@ public class PaxosNode<T> implements AgreedNode<T>, PaxosAcceptor {
     @Override
     public synchronized void subscribe(Observer<T> observer) {
         consensusObservers.add(observer);
-        log.replay(observer::notify);
-    }
-
-    @Override
-    public synchronized Promise prepare(Prepare prepare) {
-        return null;
-    }
-
-    @Override
-    public synchronized Accepted accept(Accept accept) {
-        return null;
     }
 }

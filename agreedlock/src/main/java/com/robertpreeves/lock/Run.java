@@ -5,9 +5,6 @@ import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.AgreedNodeEndpoint;
 import com.robertpreeves.agreed.AgreedNodeFactory;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.status.StatusLogger;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +29,7 @@ public class Run {
                 new AgreedNodeEndpoint("localhost", 8113)
         );
 
-        AgreedNode<LockState> agreeNode = AgreedNodeFactory.create(0, nodes);
+        AgreedNode<FileLock> agreeNode = AgreedNodeFactory.create(0, nodes);
 
         //A lock subscriber will subscribe to the agreeNode
         //It will be responsible for maintaining all lock states

@@ -6,15 +6,15 @@ import com.robertpreeves.agreed.observer.Observer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LockNode implements Observer<LockState> {
-    private final Map<String, LockState> locks = new HashMap<String, LockState>();
-    private final AgreedNode<LockState> lockNegotiator;
+public class LockNode implements Observer<FileLock> {
+    private final Map<String, FileLock> locks = new HashMap<String, FileLock>();
+    private final AgreedNode<FileLock> lockNegotiator;
 
-    public LockNode(AgreedNode<LockState> lockNegotiator) {
+    public LockNode(AgreedNode<FileLock> lockNegotiator) {
         this.lockNegotiator = lockNegotiator;
     }
 
-    public void notify(LockState value) {
+    public void notify(FileLock value) {
         //todo update locks state
     }
 }

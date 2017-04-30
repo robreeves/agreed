@@ -81,8 +81,7 @@ public class PublicApi {
                         fileName, lock.getLockId());
                 return null;
             } else {
-                LOGGER.info("File lock for '{}' obtained. Lock id '{}'.",
-                        fileName, lock.getLockId());
+                LOGGER.info("File lock obtained. {}", lock);
                 return newLock;
             }
         } else {
@@ -111,7 +110,7 @@ public class PublicApi {
             throw new IllegalStateException(String.format("Lock not released %s", lock));
         }
 
-        LOGGER.info("File lock released {}", lock);
+        LOGGER.info("File lock released. {}", lock);
     }
 
     private Object lockedInvoke(Request request, Response response, RequestHandler handler) {

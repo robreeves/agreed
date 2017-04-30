@@ -10,11 +10,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 import spark.Request;
 import spark.Response;
-import spark.Route;
 import spark.Service;
 
 import static spark.Service.ignite;
@@ -56,9 +54,9 @@ public class PublicApi {
 
     /**
      * Attempts to obtain the lock for the file.
-     * @param fileName
-     * @return If the lock is obtained, the lock is returned.
-     * If the lock is not obtained, null is returned.
+     *
+     * @return If the lock is obtained, the lock is returned. If the lock is not obtained, null is
+     * returned.
      */
     private FileLock lock(String fileName) {
         FileLock lock = locks.get(fileName);
@@ -96,9 +94,24 @@ public class PublicApi {
     }
 
     private void unlock(FileLock lock) {
+        //verify this is the correct lock
+        //this is likely a bug if not
+        FileLock currentLock = locks.get(lock.getFileId());
+        if (currentLock == null || !currentLock.getLockId().equals(lock.getLockId())) {
+            throw new IllegalStateException(String.format("Cant unlock because it doesnt have " +
+                    "lock. Current %s. This %s", currentLock, lock));
+        }
 
-        //todo
-        //LOGGER.info("File lock released for '{}'", fileName);
+        //unlock
+        agreedNode.propose(lock.unlock());
+
+        //verify lock is released
+        currentLock = locks.get(lock.getFileId());
+        if (currentLock != null && currentLock.getLockId().equals(lock.getLockId())) {
+            throw new IllegalStateException(String.format("Lock not released %s", lock));
+        }
+
+        LOGGER.info("File lock released {}", lock);
     }
 
     private Object lockedInvoke(Request request, Response response, RequestHandler handler) {
@@ -111,9 +124,8 @@ public class PublicApi {
                 unlock(lock);
             }
         } else {
-            response.body("Couldn't obtain lock");
             response.status(503);
-            return null;
+            return "Couldn't obtain lock";
         }
     }
 
@@ -137,7 +149,7 @@ public class PublicApi {
 
     private Object updateFile(Request request, Response response) {
         return lockedInvoke(request, response, (req, res, fileName) -> {
-           //todo update file
+            //todo update file
 
             response.status(200);
             return "updated";

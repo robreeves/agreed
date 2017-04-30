@@ -2,7 +2,6 @@ package com.robertpreeves.agreed.paxos;
 
 import com.google.gson.Gson;
 import com.robertpreeves.agreed.paxos.messages.Accept;
-import com.robertpreeves.agreed.paxos.messages.Commit;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 
 import org.apache.logging.log4j.LogManager;
@@ -38,10 +37,6 @@ public class PaxosHttpAcceptor<T> {
 
         httpSvr.post(Uris.ACCEPT, MIME_JSON, (request, response) ->
                         process(request, response, Accept.class, node::accept),
-                GSON::toJson);
-
-        httpSvr.post(Uris.COMMIT, MIME_JSON, (request, response) ->
-                        process(request, response, Commit.class, node::commit),
                 GSON::toJson);
 
         httpSvr.awaitInitialization();

@@ -4,7 +4,6 @@ import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.observer.Observer;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Accepted;
-import com.robertpreeves.agreed.paxos.messages.Commit;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
@@ -28,19 +27,14 @@ public class PaxosNode<T> implements AgreedNode<T>, PaxosAcceptor {
     @Override
     public synchronized void propose(T value) {
         //prepare message
-        Prepare prepare = new Prepare();
+        Prepare prepare = null;
         Promise promise = acceptorsProxy.prepare(prepare);
         //todo check promise response
 
         //accept message
-        Accept accept = new Accept();
+        Accept accept = null;
         Accepted accepted = acceptorsProxy.accept(accept);
         //todo check accepted response
-
-        //commit message
-        Commit commit = new Commit();
-        acceptorsProxy.commit(commit);
-        //todo check commit response
 
         //todo notify observers after commit
         consensusObservers.forEach(observer -> observer.notify(value));
@@ -59,16 +53,11 @@ public class PaxosNode<T> implements AgreedNode<T>, PaxosAcceptor {
 
     @Override
     public synchronized Promise prepare(Prepare prepare) {
-        return new Promise();
+        return null;
     }
 
     @Override
     public synchronized Accepted accept(Accept accept) {
-        return new Accepted();
-    }
-
-    @Override
-    public synchronized Boolean commit(Commit commit) {
-        return true;
+        return null;
     }
 }

@@ -4,10 +4,10 @@ import com.robertpreeves.agreed.paxos.PaxosAcceptorsProxy;
 import com.robertpreeves.agreed.paxos.PaxosHttpAcceptor;
 import com.robertpreeves.agreed.paxos.PaxosNode;
 
-import java.util.List;
+import java.util.Set;
 
 public class AgreedNodeFactory {
-    public static <T> AgreedNode<T> create(int port, List<AgreedNodeEndpoint> otherNodes) {
+    public static <T> AgreedNode<T> create(int port, Set<String> otherNodes) {
         //validate group size
         if (otherNodes.size() % 2 > 0) {
             throw new IllegalArgumentException("There must be an odd number of total nodes so " +

@@ -1,18 +1,17 @@
 package com.robertpreeves.agreed.paxos;
 
-import com.robertpreeves.agreed.AgreedNodeEndpoint;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Commit;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
-import java.util.List;
+import java.util.Set;
 
 public class PaxosAcceptorsProxy implements PaxosAcceptor {
-    private final List<AgreedNodeEndpoint> otherNodes;
+    private final Set<String> otherNodes;
 
-    public PaxosAcceptorsProxy(List<AgreedNodeEndpoint> otherNodes) {
+    public PaxosAcceptorsProxy(Set<String> otherNodes) {
         this.otherNodes = otherNodes;
     }
 

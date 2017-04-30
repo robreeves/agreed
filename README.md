@@ -9,15 +9,16 @@ TODO summary
 ```
 Usage: com.robertpreeves.lock.Run [options]
   Options:
+    -agreed-port
+      The port for internal agreed communication
     -dir
       The directory where the files for distributed access are located. This 
       should be a path that all nodes can access.
     -help
       Documentation for this CLI.
-    -node-index
-      The index for this node in the -nodes file.
     -nodes
-      The path to the file with the list of nodes.
+      The list of other nodes in the group in the format 
+      hostname:port,hostname:port,... 
     -port
       The port for the public REST API
 ```

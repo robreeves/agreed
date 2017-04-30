@@ -21,6 +21,7 @@ public class FileLock {
 
     /**
      * Gets the lock Id
+     *
      * @return If the Id is non-null, the file is locked. If the Id is null the file is unlocked.
      */
     public String getLockId() {

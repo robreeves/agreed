@@ -119,7 +119,7 @@ public class PublicApi {
         FileLock lock = lock(fileName);
         if (lock != null) {
             try {
-                return handler.handle(fileName, request, response);
+                return handler.handle(request, response, fileName);
             } finally {
                 unlock(lock);
             }
@@ -157,10 +157,18 @@ public class PublicApi {
     }
 
     private void lockUpdate(FileLock lockUpdate) {
-
+        if (lockUpdate.getLockId() == null) {
+            locks.remove(lockUpdate.getFileId());
+        } else {
+            FileLock prevLock = locks.putIfAbsent(lockUpdate.getFileId(), lockUpdate);
+            if (prevLock != null) {
+                throw new IllegalStateException(String.format("Lock was updated when it was " +
+                        "already locked. %s %s", prevLock, lockUpdate));
+            }
+        }
     }
 
     private interface RequestHandler {
-        Object handle(String fileName, Request request, Response response);
+        Object handle(Request request, Response response, String fileName);
     }
 }

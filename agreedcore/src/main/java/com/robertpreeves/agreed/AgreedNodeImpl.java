@@ -43,6 +43,8 @@ class AgreedNodeImpl<T> implements AgreedNode<T> {
         2. do paxos stuff
         3.notify consensusObservers
          */
+
+        notify(value);
     }
 
     /**

@@ -4,10 +4,16 @@ import java.util.function.Consumer;
 
 public interface Log<T> {
     /**
+     * Gets the most recent sequence number
+     * @return
+     */
+    long getSequenceNumber();
+
+    /**
      * Adds a new entry to the log
      * @param value
      */
-    void push(T value);
+    void push(long sequenceNumber, T value);
 
     /**
      * Replays all log entries from oldest to newest

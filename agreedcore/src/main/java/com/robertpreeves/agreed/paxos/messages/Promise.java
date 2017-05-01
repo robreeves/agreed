@@ -17,4 +17,9 @@ public class Promise<T> {
         this.promised = promised;
         this.acceptedValue = acceptedValue;
     }
+
+    @Override
+    public String toString() {
+        return String.format("{promised: %s, acceptedValue: %s}", promised, acceptedValue);
+    }
 }

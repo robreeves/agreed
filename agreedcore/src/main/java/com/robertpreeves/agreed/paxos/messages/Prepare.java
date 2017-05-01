@@ -9,4 +9,9 @@ public class Prepare {
     public Prepare(long sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
     }
+
+    @Override
+    public String toString() {
+        return String.format("{sequenceNumber: %s}", Long.toUnsignedString(sequenceNumber));
+    }
 }

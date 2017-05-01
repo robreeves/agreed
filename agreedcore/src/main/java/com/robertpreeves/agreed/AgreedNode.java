@@ -10,7 +10,7 @@ public interface AgreedNode<T> {
      *
      * @param value The new value
      */
-    Boolean propose(T value) throws NoConsensusException;
+    T propose(T value) throws NoConsensusException;
 
     /**
      * Gets the current value

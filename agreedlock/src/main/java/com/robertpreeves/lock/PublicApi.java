@@ -116,9 +116,10 @@ public class PublicApi {
         if (!lock.isLocked()) {
             //lock is free
             //attempt to lock it
-            if (!agreedNode.propose(lock.lock())) {
+            FileLock agreedLock = agreedNode.propose(lock.lock());
+            if (!agreedLock.getLockId().equals(lock.getLockId())) {
                 //todo retry?
-                throw new Exception("couldnt get lock");
+                throw new Exception("another request got the lock");
             }
 
             return lock;
@@ -137,7 +138,8 @@ public class PublicApi {
         }
 
         //unlock
-        agreedNode.propose(lock.unlock());
+        FileLock agreedLock = agreedNode.propose(lock.unlock());
+        //todo validate lock is free
     }
 
     private Object lockedInvoke(Request request, Response response, RequestHandler handler) {

@@ -29,28 +29,15 @@ package com.robertpreeves.agreed.paxos;
 class SequenceNumber {
     private static final int NODEID_OFFSET = Byte.SIZE;
     private static final long MAX_ROUND = Long.MAX_VALUE >> NODEID_OFFSET;
-    private final long sequenceNumber;
-
-    public SequenceNumber(long sequenceNumber) {
-        this.sequenceNumber = sequenceNumber;
-    }
-
-    /**
-     * Gets the current sequence number
-     *
-     * @return The sequence number as an unsigned long
-     */
-    public long getSequenceNumber() {
-        return sequenceNumber;
-    }
 
     /**
      * Calculates the next sequence number to use
      *
      * @param nodeId The proposer node Id
+     * @param sequenceNumber
      * @return The next sequence number to use during a proposal. This is an unsigned long.
      */
-    public long getNext(byte nodeId) {
+    public static long getNext(byte nodeId, long sequenceNumber) {
         //get current round number
         long nextSequenceNumber = sequenceNumber >> NODEID_OFFSET;
 

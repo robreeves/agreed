@@ -1,6 +1,7 @@
 package com.robertpreeves.agreed.paxos;
 
 import com.robertpreeves.agreed.AgreedNode;
+import com.robertpreeves.agreed.NoConsensusException;
 import com.robertpreeves.agreed.observer.Observer;
 
 public class PaxosNode<T> implements AgreedNode<T> {
@@ -13,12 +14,12 @@ public class PaxosNode<T> implements AgreedNode<T> {
     }
 
     @Override
-    public Boolean propose(T value) {
+    public T propose(T value) throws NoConsensusException {
         return proposer.propose(value);
     }
 
     @Override
-    public T getCurrent() {
+    public T getCurrent() throws NoConsensusException {
         return proposer.getCurrent();
     }
 }

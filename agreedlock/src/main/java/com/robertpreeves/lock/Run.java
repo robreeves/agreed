@@ -4,6 +4,8 @@ import com.beust.jcommander.JCommander;
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.AgreedNodeFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class Run {
     public static void main(String[] args) {
         CommandLine cli = new CommandLine();
@@ -18,8 +20,8 @@ public class Run {
             return;
         }
 
-        AgreedNode<FileLock> agreeNode = AgreedNodeFactory.create(cli.getAgreedPort(), cli
-                .getNodes());
+        AgreedNode<ConcurrentHashMap<String, FileLock>> agreeNode =
+                AgreedNodeFactory.create(cli.getAgreedPort(), cli.getNodes());
         PublicApi api = new PublicApi(cli.getPort(), agreeNode);
 
         try {

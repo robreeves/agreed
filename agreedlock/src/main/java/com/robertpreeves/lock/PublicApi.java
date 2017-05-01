@@ -21,14 +21,12 @@ public class PublicApi {
     private static final Logger LOGGER = LogManager.getLogger(PublicApi.class);
     private static final String FILE_PARAM = ":fileName";
     private static final String CONTENT_PARAM = ":content";
-    private static final Gson GSON = new Gson();
-    private static final String MIME_JSON = "application/json";
     private static final String MIME_TEXT = "text/plain";
 
-    private final AgreedNode<FileLock> agreedNode;
-    private final ConcurrentHashMap<String, FileLock> locks = new ConcurrentHashMap<>();
+    private final AgreedNode<ConcurrentHashMap<String, FileLock>> agreedNode;
+    private ConcurrentHashMap<String, FileLock> locks = new ConcurrentHashMap<>();
 
-    public PublicApi(int port, AgreedNode<FileLock> agreedNode) {
+    public PublicApi(int port, AgreedNode<ConcurrentHashMap<String, FileLock>> agreedNode) {
         this.agreedNode = agreedNode;
 
         //Subscribe to lock state updates
@@ -155,16 +153,8 @@ public class PublicApi {
         });
     }
 
-    private void lockUpdate(FileLock lockUpdate) {
-        if (lockUpdate.getLockId() == null) {
-            locks.remove(lockUpdate.getFileId());
-        } else {
-            FileLock prevLock = locks.putIfAbsent(lockUpdate.getFileId(), lockUpdate);
-            if (prevLock != null) {
-                throw new IllegalStateException(String.format("Lock was updated when it was " +
-                        "already locked. %s %s", prevLock, lockUpdate));
-            }
-        }
+    private void lockUpdate(ConcurrentHashMap<String, FileLock> locks) {
+        this.locks = locks;
     }
 
     private interface RequestHandler {

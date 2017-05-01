@@ -7,12 +7,12 @@ import com.robertpreeves.agreed.paxos.messages.Promise;
 
 import java.util.Set;
 
-public class PaxosAcceptorsProxy implements PaxosAcceptor {
+public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T> {
     private final PaxosAcceptor localAcceptor;
     private final Set<String> otherNodes;
     private final int majorityCount;
 
-    public PaxosAcceptorsProxy(PaxosAcceptor localAcceptor, Set<String> otherNodes) {
+    public PaxosAcceptorsProxy(PaxosAcceptor<T> localAcceptor, Set<String> otherNodes) {
         this.localAcceptor = localAcceptor;
         this.otherNodes = otherNodes;
 
@@ -28,8 +28,13 @@ public class PaxosAcceptorsProxy implements PaxosAcceptor {
     }
 
     @Override
-    public Accepted accept(Accept accept) {
+    public Accepted accept(Accept<T> accept) {
         //todo accept message to all nodes
         return localAcceptor.accept(accept);
+    }
+
+    @Override
+    public Accept<T> getAccepted() {
+        return null;
     }
 }

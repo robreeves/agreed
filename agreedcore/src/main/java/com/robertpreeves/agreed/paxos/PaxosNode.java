@@ -13,12 +13,12 @@ public class PaxosNode<T> implements AgreedNode<T> {
     }
 
     @Override
-    public void subscribe(Observer<T> observer) {
-        acceptor.subscribe(observer);
+    public void propose(T value) {
+        proposer.propose(value);
     }
 
     @Override
-    public void propose(T value) {
-        proposer.propose(value);
+    public T getCurrent() {
+        return proposer.getCurrent();
     }
 }

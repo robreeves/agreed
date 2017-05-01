@@ -20,7 +20,7 @@ public class Run {
             return;
         }
 
-        AgreedNode<ConcurrentHashMap<String, FileLock>> agreeNode =
+        AgreedNode<FileLock> agreeNode =
                 AgreedNodeFactory.create(cli.getAgreedPort(), cli.getNodes());
         PublicApi api = new PublicApi(cli.getPort(), agreeNode);
 

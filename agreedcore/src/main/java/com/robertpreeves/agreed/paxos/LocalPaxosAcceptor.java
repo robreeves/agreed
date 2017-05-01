@@ -13,13 +13,8 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, Observable<T> {
+public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
     private static final Logger LOGGER = LogManager.getLogger(LocalPaxosAcceptor.class);
-
-    /**
-     * The list of subscribers to notify when a value is accepted
-     */
-    private List<Observer<T>> consensusObservers = new ArrayList<>();
 
     /**
      * The most recently seen acceptance number.
@@ -49,17 +44,6 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, Observable<T> {
         if (seqNumCompare == 0) {
             //accept value
             acceptedValue = accept;
-
-            //notify observers
-            consensusObservers.forEach(observer -> {
-                try {
-
-                } catch (Exception e) {
-                    //dont let a runtime exception of one observer stop another observer
-                    //from being notified
-                    LOGGER.error(e);
-                }
-            });
         } else if (seqNumCompare > 0) {
             //this is unexpected. this means the prepare message was never received for this
             //sequence number. the proposer should not send an accept message if the prepare
@@ -71,12 +55,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, Observable<T> {
     }
 
     @Override
-    public synchronized void subscribe(Observer<T> observer) {
-        //notify subscriber for current value
-        if (acceptedValue != null) {
-            observer.notify(acceptedValue.value);
-        }
-
-        consensusObservers.add(observer);
+    public synchronized Accept<T> getAccepted() {
+        return acceptedValue;
     }
 }

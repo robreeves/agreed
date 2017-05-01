@@ -15,9 +15,9 @@ import java.util.List;
 
 public class PaxosProposer<T> {
     private static final Logger LOGGER = LogManager.getLogger(PaxosProposer.class);
-    private final PaxosAcceptor acceptorsProxy;
+    private final PaxosAcceptor<T> acceptorsProxy;
 
-    public PaxosProposer(PaxosAcceptor acceptorsProxy) {
+    public PaxosProposer(PaxosAcceptor<T> acceptorsProxy) {
         this.acceptorsProxy = acceptorsProxy;
     }
 
@@ -31,5 +31,9 @@ public class PaxosProposer<T> {
         Accept accept = null;
         Accepted accepted = acceptorsProxy.accept(accept);
         //todo check accepted response
+    }
+
+    public T getCurrent() {
+        return acceptorsProxy.getAccepted().value;
     }
 }

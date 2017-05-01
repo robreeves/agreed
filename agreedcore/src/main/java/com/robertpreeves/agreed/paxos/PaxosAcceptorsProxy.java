@@ -18,11 +18,13 @@ public class PaxosAcceptorsProxy implements PaxosAcceptor {
 
     @Override
     public Promise prepare(Prepare prepare) {
+        //todo prepare message to all nodes
         return null;
     }
 
     @Override
     public Accepted accept(Accept accept) {
+        //todo accept message to all nodes
         return null;
     }
 }

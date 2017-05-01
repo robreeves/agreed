@@ -13,24 +13,33 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
     private long currentSeqNumber;
 
     /**
-     * The most recently accepted sequence number.
-     * This is updated when a value is accepted.
-     */
-    private long acceptedSeqNumber;
-
-    /**
      * The most recently accepted value.
      * This is updated when a value is accepted.
      */
-    private T acceptedValue;
+    private Accept<T> acceptedValue;
 
     @Override
-    public Promise prepare(Prepare prepare) {
-        return null;
+    public synchronized Promise prepare(Prepare prepare) {
+        if (Long.compareUnsigned(prepare.sequenceNumber, currentSeqNumber) > 0) {
+            currentSeqNumber = prepare.sequenceNumber;
+            return new Promise(true, acceptedValue);
+        } else {
+            return new Promise(false, null);
+        }
     }
 
     @Override
-    public Accepted accept(Accept accept) {
-        return null;
+    public synchronized Accepted accept(Accept accept) {
+        int seqNumCompare = Long.compare(accept.sequenceNumber, currentSeqNumber);
+        if (seqNumCompare == 0) {
+            acceptedValue = accept;
+        } else if (seqNumCompare > 0) {
+            //this is unexpected. this means the prepare message was never received for this
+            //sequence number. the proposer should not send an accept message if the prepare
+            //message never received a promise from the acceptor.
+            //todo throw exception?
+        }
+
+        return new Accepted(acceptedValue.sequenceNumber);
     }
 }

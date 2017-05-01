@@ -21,7 +21,7 @@ public class PaxosProposer<T> {
         this.acceptorsProxy = acceptorsProxy;
     }
 
-    public synchronized void propose(T value) {
+    public synchronized Boolean propose(T value) {
         //prepare message
         Prepare prepare = null;
         Promise promise = acceptorsProxy.prepare(prepare);
@@ -31,9 +31,16 @@ public class PaxosProposer<T> {
         Accept accept = null;
         Accepted accepted = acceptorsProxy.accept(accept);
         //todo check accepted response
+
+        return true;
     }
 
     public T getCurrent() {
-        return acceptorsProxy.getAccepted().value;
+        Accept<T> acceptedValue = acceptorsProxy.getAccepted();
+        if (acceptedValue != null) {
+            return acceptedValue.value;
+        } else {
+            return null;
+        }
     }
 }

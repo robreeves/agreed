@@ -1,6 +1,7 @@
 package com.robertpreeves.agreed;
 
 
+import java.util.function.Supplier;
 
 public interface AgreedNode<T> {
     /**
@@ -13,7 +14,7 @@ public interface AgreedNode<T> {
 
     /**
      * Gets the current value
-     * @return
+     * @return The current value
      * @throws NoConsensusException
      */
     T getCurrent() throws NoConsensusException;

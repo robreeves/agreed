@@ -20,6 +20,10 @@ public class FileLock {
         return this;
     }
 
+    public String getLockId() {
+        return lockId;
+    }
+
     public FileLock unlock() {
         if (!isLocked()) {
             throw new IllegalStateException();

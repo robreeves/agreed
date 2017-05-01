@@ -109,8 +109,11 @@ public class PublicApi {
 
     private FileLock lock() throws Exception {
         FileLock lock = agreedNode.getCurrent();
+        if (lock == null) {
+            lock = new FileLock();
+        }
 
-        if (lock == null || !lock.isLocked()) {
+        if (!lock.isLocked()) {
             //lock is free
             //attempt to lock it
             if (!agreedNode.propose(lock.lock())) {
@@ -125,13 +128,25 @@ public class PublicApi {
         }
     }
 
+    private void unlock(FileLock lock) throws NoConsensusException {
+        //this is not required, but do it as a safety check
+        FileLock currentLock = agreedNode.getCurrent();
+        if (!lock.getLockId().equals(currentLock.getLockId())) {
+            throw new IllegalStateException(String.format("Unexpected lock %s. Should be %s",
+                    currentLock.getLockId(), lock.getLockId()));
+        }
+
+        //unlock
+        agreedNode.propose(lock.unlock());
+    }
+
     private Object lockedInvoke(Request request, Response response, RequestHandler handler) {
         String fileName = request.params(FILE_PARAM);
         FileLock lock;
         try {
             lock = lock();
         } catch (Exception e) {
-            LOGGER.error(e);
+            LOGGER.error("Error getting lock", e);
             response.status(503);
             return "Could not get the lock";
         }
@@ -140,11 +155,17 @@ public class PublicApi {
             try {
                 return handler.handle(request, response, fileName);
             } finally {
-                unlock(lock);
+                try {
+                    unlock(lock);
+                } catch (NoConsensusException e) {
+                    //todo this is really and and needs to be handled in a better way
+                    //need to give back lock always
+                    e.printStackTrace();
+                }
             }
         } else {
             response.status(503);
-            return "Couldn't obtain lock";
+            return "Lock not free";
         }
     }
 

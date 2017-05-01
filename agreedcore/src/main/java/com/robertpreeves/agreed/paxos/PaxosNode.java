@@ -13,8 +13,8 @@ public class PaxosNode<T> implements AgreedNode<T> {
     }
 
     @Override
-    public void propose(T value) {
-        proposer.propose(value);
+    public Boolean propose(T value) {
+        return proposer.propose(value);
     }
 
     @Override

@@ -1,8 +1,6 @@
 package com.robertpreeves.agreed;
 
 
-import java.util.function.Supplier;
-
 public interface AgreedNode<T> {
     /**
      * Proposes the next value. This does not guarantees the value will be accepted.
@@ -14,8 +12,8 @@ public interface AgreedNode<T> {
 
     /**
      * Gets the current value
+     *
      * @return The current value
-     * @throws NoConsensusException
      */
     T getCurrent() throws NoConsensusException;
 }

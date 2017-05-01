@@ -4,8 +4,6 @@ import com.beust.jcommander.JCommander;
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.AgreedNodeFactory;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 public class Run {
     public static void main(String[] args) {
         CommandLine cli = new CommandLine();

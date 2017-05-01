@@ -34,7 +34,6 @@ class SequenceNumber {
      * Calculates the next sequence number to use
      *
      * @param nodeId The proposer node Id
-     * @param sequenceNumber
      * @return The next sequence number to use during a proposal. This is an unsigned long.
      */
     public static long getNext(byte nodeId, long sequenceNumber) {

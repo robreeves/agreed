@@ -1,10 +1,5 @@
 package com.robertpreeves.agreed.paxos;
 
-import org.junit.Assert;
-import org.junit.Test;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 public class SequenceNumberTest {
 //    @Test
 //    public void nextSequenceNumberTest() {

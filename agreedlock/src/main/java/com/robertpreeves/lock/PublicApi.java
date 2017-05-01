@@ -1,7 +1,6 @@
 package com.robertpreeves.lock;
 
 
-import com.google.gson.Gson;
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.NoConsensusException;
 
@@ -10,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.concurrent.ConcurrentHashMap;
 
 import spark.Request;
 import spark.Response;

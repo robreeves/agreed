@@ -2,7 +2,6 @@ package com.robertpreeves.agreed.paxos;
 
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.NoConsensusException;
-import com.robertpreeves.agreed.observer.Observer;
 
 public class PaxosNode<T> implements AgreedNode<T> {
     private final LocalPaxosAcceptor<T> acceptor;

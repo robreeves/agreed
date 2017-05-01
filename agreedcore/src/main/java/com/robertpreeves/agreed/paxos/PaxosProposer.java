@@ -1,8 +1,6 @@
 package com.robertpreeves.agreed.paxos;
 
-import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.NoConsensusException;
-import com.robertpreeves.agreed.observer.Observer;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
@@ -10,9 +8,6 @@ import com.robertpreeves.agreed.paxos.messages.Promise;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class PaxosProposer<T> {
     private static final Logger LOGGER = LogManager.getLogger(PaxosProposer.class);

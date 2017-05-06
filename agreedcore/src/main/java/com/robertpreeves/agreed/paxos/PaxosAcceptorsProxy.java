@@ -40,7 +40,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T> {
     }
 
     @Override
-    public void commit(Accepted accepted) {
-        
+    public void commit(Accept<T> accepted) {
+        localAcceptor.commit(accepted);
     }
 }

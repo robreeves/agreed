@@ -21,7 +21,8 @@ public class PaxosProposer<T> {
 
     public synchronized T propose(T value) throws NoConsensusException {
         //prepare message
-        Prepare prepare = new Prepare(SequenceNumber.getNext(nodeId, lastKnownSequenceNumber));
+        lastKnownSequenceNumber = SequenceNumber.getNext(nodeId, lastKnownSequenceNumber);
+        Prepare prepare = new Prepare(lastKnownSequenceNumber);
         Promise<T> promise = acceptorsProxy.prepare(prepare);
         if (!promise.promised) {
             throw new NoConsensusException(String.format("Not accepted as proposer. %s", prepare));
@@ -30,15 +31,18 @@ public class PaxosProposer<T> {
         }
 
         //accept message
-        Accept accept = new Accept(prepare.sequenceNumber, value);
+        Accept<T> accept = new Accept(prepare.sequenceNumber, value);
         Accepted accepted = acceptorsProxy.accept(accept);
-        if (Long.compareUnsigned(accept.sequenceNumber, accepted.sequenceNumber) == 0) {
-            return value;
-        } else {
+        if (Long.compareUnsigned(accept.sequenceNumber, accepted.sequenceNumber) != 0) {
+            lastKnownSequenceNumber = accepted.sequenceNumber;
             throw new NoConsensusException("Didn't accept value");
         }
 
-        //todo commit once majority reached
+        //commit value
+        acceptorsProxy.commit(accept);
+
+        return value;
+
     }
 
     public T getCurrent() {

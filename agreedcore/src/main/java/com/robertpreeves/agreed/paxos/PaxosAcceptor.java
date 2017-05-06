@@ -12,5 +12,5 @@ public interface PaxosAcceptor<T> {
 
     Accept<T> getAccepted();
 
-    void commit(Accepted accepted);
+    void commit(Accept<T> accepted);
 }

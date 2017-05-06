@@ -19,14 +19,14 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
     /**
      * The current accepted value.
      */
-    private Accept<T> acceptedValue;
+    private Accept<T> currentAcceptedValue;
 
     @Override
     public synchronized Promise prepare(Prepare prepare) {
         Promise<T> promise;
         if (Long.compareUnsigned(prepare.sequenceNumber, promisedSequenceNumber) > 0) {
             promisedSequenceNumber = prepare.sequenceNumber;
-            promise = new Promise(true, acceptedValue);
+            promise = new Promise(true, currentAcceptedValue);
         } else {
             promise = new Promise(false, null);
         }
@@ -41,7 +41,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
         int seqNumCompare = Long.compare(accept.sequenceNumber, promisedSequenceNumber);
         if (seqNumCompare == 0) {
             //accept value
-            acceptedValue = accept;
+            currentAcceptedValue = accept;
         } else if (seqNumCompare > 0) {
             //this is unexpected. this means the prepare message was never received for this
             //sequence number. the proposer should not send an accept message if the prepare
@@ -52,30 +52,30 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
                             accept.sequenceNumber,
                             accept));
         }
-        //if the accept sequence number is less don't update the acceptedValue and tell the proposer
+        //if the accept sequence number is less don't update the currentAcceptedValue and tell the proposer
         //about the higher sequence number that has been accepted
 
-        Accepted accepted = new Accepted(acceptedValue.sequenceNumber);
+        Accepted accepted = new Accepted(currentAcceptedValue.sequenceNumber);
         LOGGER.info("Accept: {}\nAccepted: {}\nAcceptor: {}", accept, accepted, this);
         return accepted;
     }
 
     @Override
-    public synchronized void commit(Accepted accepted) {
-        LOGGER.info("Commit: {}\nAcceptor: {}", accepted, this);
+    public synchronized void commit(Accept<T> accepted) {
         //todo
-        accepted = null;
+        currentAcceptedValue = null;
+        LOGGER.info("Commit: {}\nAcceptor: {}", accepted, this);
     }
 
     @Override
     public synchronized Accept<T> getAccepted() {
-        return acceptedValue;
+        return currentAcceptedValue;
     }
 
     @Override
     public synchronized String toString() {
-        return String.format("{promisedSequenceNumber: %s, acceptedValue: %s}",
+        return String.format("{promisedSequenceNumber: %s, currentAcceptedValue: %s}",
                 promisedSequenceNumber,
-                acceptedValue);
+                currentAcceptedValue);
     }
 }

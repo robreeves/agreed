@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.function.Function;
@@ -16,7 +17,7 @@ import spark.Request;
 import spark.Response;
 import spark.Service;
 
-public class PaxosHttpAcceptor<T> {
+public class PaxosHttpAcceptor<T> implements AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(PaxosHttpAcceptor.class);
     private static final Gson GSON = new Gson();
     private static final String MIME_JSON = "application/json";
@@ -62,5 +63,10 @@ public class PaxosHttpAcceptor<T> {
             response.status(400);
             return String.format("Invalid JSON for input type %s", inClass.getSimpleName());
         }
+    }
+
+    @Override
+    public void close() {
+        httpSvr.stop();
     }
 }

@@ -24,6 +24,6 @@ public class AgreedNodeFactory {
         PaxosHttpAcceptor acceptorSvc = new PaxosHttpAcceptor(port, localAcceptor);
         PaxosProposer localProposer = new PaxosProposer(acceptorsProxy);
 
-        return new PaxosNode(localAcceptor, localProposer);
+        return new PaxosNode(localAcceptor, localProposer, acceptorSvc);
     }
 }

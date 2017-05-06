@@ -3,6 +3,7 @@ package com.robertpreeves.lock;
 import com.beust.jcommander.JCommander;
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.AgreedNodeFactory;
+import com.robertpreeves.agreed.NoConsensusException;
 
 public class Run {
     public static void main(String[] args) {
@@ -18,14 +19,25 @@ public class Run {
             return;
         }
 
-        AgreedNode<FileLock> agreeNode =
-                AgreedNodeFactory.create(cli.getAgreedPort(), cli.getNodes());
-        PublicApi api = new PublicApi(cli.getPort(), agreeNode);
+        try (AgreedNode<FileLock> agreeNode =
+                AgreedNodeFactory.create(cli.getAgreedPort(), cli.getNodes())) {
+            //testing
+            FileLock lock = new FileLock().lock();
+            agreeNode.propose(lock);
 
-        try {
-            //run forever
-            Thread.currentThread().join();
-        } catch (InterruptedException e) {
+            lock = lock.unlock();
+            agreeNode.propose(lock);
+
+            //        PublicApi api = new PublicApi(cli.getPort(), agreeNode);
+//
+//        try {
+//            //run forever
+//            Thread.currentThread().join();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

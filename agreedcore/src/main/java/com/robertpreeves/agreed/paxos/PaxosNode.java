@@ -8,7 +8,8 @@ public class PaxosNode<T> implements AgreedNode<T> {
     private final PaxosProposer<T> proposer;
     private final PaxosHttpAcceptor<T> httpAcceptor;
 
-    public PaxosNode(LocalPaxosAcceptor<T> acceptor, PaxosProposer<T> proposer, PaxosHttpAcceptor<T> httpAcceptor) {
+    public PaxosNode(LocalPaxosAcceptor<T> acceptor, PaxosProposer<T> proposer,
+            PaxosHttpAcceptor<T> httpAcceptor) {
         this.acceptor = acceptor;
         this.proposer = proposer;
         this.httpAcceptor = httpAcceptor;
@@ -27,5 +28,6 @@ public class PaxosNode<T> implements AgreedNode<T> {
     @Override
     public void close() throws Exception {
         httpAcceptor.close();
+        proposer.close();
     }
 }

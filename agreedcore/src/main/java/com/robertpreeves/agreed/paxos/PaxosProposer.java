@@ -9,13 +9,13 @@ import com.robertpreeves.agreed.paxos.messages.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class PaxosProposer<T> {
+public class PaxosProposer<T> implements AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(PaxosProposer.class);
-    private final PaxosAcceptor<T> acceptorsProxy;
+    private final PaxosAcceptorsProxy<T> acceptorsProxy;
     private final byte nodeId;
     private long lastKnownSequenceNumber;
 
-    public PaxosProposer(byte nodeId, PaxosAcceptor<T> acceptorsProxy) {
+    public PaxosProposer(byte nodeId, PaxosAcceptorsProxy<T> acceptorsProxy) {
         this.nodeId = nodeId;
         this.acceptorsProxy = acceptorsProxy;
     }
@@ -53,5 +53,10 @@ public class PaxosProposer<T> {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        acceptorsProxy.close();
     }
 }

@@ -52,7 +52,8 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
                             accept.sequenceNumber,
                             accept));
         }
-        //if the accept sequence number is less don't update the currentAcceptedValue and tell the proposer
+        //if the accept sequence number is less don't update the currentAcceptedValue and tell
+        // the proposer
         //about the higher sequence number that has been accepted
 
         Accepted accepted = new Accepted(currentAcceptedValue.sequenceNumber);

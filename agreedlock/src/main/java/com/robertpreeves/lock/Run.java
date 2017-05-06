@@ -19,8 +19,9 @@ public class Run {
             return;
         }
 
+        byte nodeId = 0;
         try (AgreedNode<FileLock> agreeNode =
-                AgreedNodeFactory.create(cli.getAgreedPort(), cli.getNodes())) {
+                AgreedNodeFactory.create(nodeId, cli.getAgreedPort(), cli.getNodes())) {
             //testing
             FileLock lock = new FileLock().lock();
             agreeNode.propose(lock);

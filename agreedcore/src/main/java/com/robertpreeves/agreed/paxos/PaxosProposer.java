@@ -12,10 +12,11 @@ import org.apache.logging.log4j.Logger;
 public class PaxosProposer<T> {
     private static final Logger LOGGER = LogManager.getLogger(PaxosProposer.class);
     private final PaxosAcceptor<T> acceptorsProxy;
-    private final byte nodeId = 1;
+    private final byte nodeId;
     private long lastKnownSequenceNumber;
 
-    public PaxosProposer(PaxosAcceptor<T> acceptorsProxy) {
+    public PaxosProposer(byte nodeId, PaxosAcceptor<T> acceptorsProxy) {
+        this.nodeId = nodeId;
         this.acceptorsProxy = acceptorsProxy;
     }
 

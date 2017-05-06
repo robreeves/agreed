@@ -10,7 +10,16 @@ import com.robertpreeves.agreed.paxos.PaxosProposer;
 import java.util.Set;
 
 public class AgreedNodeFactory {
-    public static <T> AgreedNode<T> create(int port, Set<String> otherNodes) {
+    /**
+     * Creates a new agreed node. This is a single node in a cluster of nodes used to achieve
+     * consensus.
+     * @param nodeId The node Id. This must be unique within the cluster.
+     * @param port The port that this node will use for internal consensus communication.
+     * @param otherNodes The other nodes in the cluser in the format hostname:port.
+     * @param <T> The types of values that will be agreed on.
+     * @return The local agreed node.
+     */
+    public static <T> AgreedNode<T> create(byte nodeId, int port, Set<String> otherNodes) {
         //validate group size
         if (otherNodes.size() % 2 > 0) {
             throw new IllegalArgumentException("There must be an odd number of total nodes so " +
@@ -22,7 +31,7 @@ public class AgreedNodeFactory {
         LocalPaxosAcceptor localAcceptor = new LocalPaxosAcceptor();
         PaxosAcceptor acceptorsProxy = new PaxosAcceptorsProxy(localAcceptor, otherNodes);
         PaxosHttpAcceptor acceptorSvc = new PaxosHttpAcceptor(port, localAcceptor);
-        PaxosProposer localProposer = new PaxosProposer(acceptorsProxy);
+        PaxosProposer localProposer = new PaxosProposer(nodeId, acceptorsProxy);
 
         return new PaxosNode(localAcceptor, localProposer, acceptorSvc);
     }

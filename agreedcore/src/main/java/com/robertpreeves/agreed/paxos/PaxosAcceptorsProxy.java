@@ -45,67 +45,23 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 
     @Override
     public Promise<T> prepare(Prepare prepare) {
-        HttpClient httpClient = HttpClients.createDefault();
+        //Send prepare messages to remote acceptors
+        List<Future<Promise>> promises = makeRequests(Uris.PREPARE, prepare, Promise.class);
 
-        //Send prepare messages
-        List<Future<Promise<T>>> promises = new ArrayList<>();
-
-        //Local acceptor
-        Future<Promise<T>> localPromise = executor.submit(() -> localAcceptor.prepare(prepare));
+        //Send prepare message to local acceptor
+        Future<Promise> localPromise = executor.submit(() -> localAcceptor.prepare(prepare));
         promises.add(localPromise);
 
-        //Remote acceptors
-        StringEntity requestBody = new StringEntity(GSON.toJson(prepare), "UTF-8");
-        otherNodes.forEach(otherNode -> {
-            Future<Promise<T>> promiseFuture = executor.submit(() -> {
-                //Create HTTP request
-                String uri = String.format("http://%s%s", otherNode, Uris.PREPARE);
-                HttpPost request = new HttpPost(uri);
-                request.setHeader("content-type", "application/json");
-                request.setEntity(requestBody);
-
-                Promise<T> promise;
-                try {
-                    //Make request
-                    HttpResponse response = httpClient.execute(request);
-
-                    //Process promise response
-                    HttpEntity body = response.getEntity();
-                    if (response.getStatusLine().getStatusCode() == 200
-                            && body != null
-                            && body.getContent() != null) {
-                        try (InputStreamReader reader = new InputStreamReader(body.getContent());
-                             BufferedReader bufferReader = new BufferedReader(reader)
-                        ) {
-                            promise = GSON.fromJson(bufferReader, Promise.class);
-                            LOGGER.info("Promise response from {}: {}", otherNode, promise);
-                        }
-                    } else {
-                        LOGGER.info("Prepare request message failure from {}. {}", otherNode,
-                                response.getStatusLine());
-                        promise = new Promise<>(false, null);
-                    }
-                } catch (IOException e) {
-                    LOGGER.info("Prepare request message failure from {}", otherNode, e);
-                    promise = new Promise<>(false, null);
-                }
-
-                return promise;
-            });
-
-            promises.add(promiseFuture);
-        });
-
-        Promise<T> promiseAggregate = reducePromises(promises);
+        Promise promiseAggregate = reducePromises(promises);
         LOGGER.info("Reduced Prepare: {}, Promise: {}", prepare, promiseAggregate);
         return promiseAggregate;
     }
 
-    private Promise<T> reducePromises(List<Future<Promise<T>>> promises) {
+    private Promise<T> reducePromises(List<Future<Promise>> promises) {
         //Get promises
         int promiseCount = 0;
         Accept<T> previouslyAccepted = null;
-        for (Future<Promise<T>> promiseFuture :
+        for (Future<Promise> promiseFuture :
                 promises) {
             Promise<T> promise;
             try {
@@ -155,11 +111,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     }
 
     @Override
-    public Accept<T> getAccepted() {
-        return null;
-    }
-
-    @Override
     public void commit(Accept<T> accepted) {
         localAcceptor.commit(accepted);
     }
@@ -167,5 +118,59 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     @Override
     public void close() throws Exception {
         executor.shutdown();
+    }
+
+    @Override
+    public Accept<T> getAccepted() {
+        return null;
+    }
+
+    private <TRequest, TResponse> List<Future<TResponse>> makeRequests(
+            String relativeUri, TRequest requestBody, Class<TResponse> responseClass) {
+        HttpClient httpClient = HttpClients.createDefault();
+
+        //Send prepare messages
+        List<Future<TResponse>> futures = new ArrayList<>();
+
+        //Remote acceptors
+        StringEntity requestEntity = new StringEntity(GSON.toJson(requestBody), "UTF-8");
+        otherNodes.forEach(otherNode -> {
+            Future<TResponse> future = executor.submit(() -> {
+                //Create HTTP request
+                String uri = String.format("http://%s%s", otherNode, relativeUri);
+                HttpPost request = new HttpPost(uri);
+                request.setHeader("content-type", "application/json");
+                request.setEntity(requestEntity);
+
+                TResponse responseBody = null;
+                try {
+                    //Make request
+                    HttpResponse response = httpClient.execute(request);
+
+                    //Process promise response
+                    HttpEntity body = response.getEntity();
+                    if (response.getStatusLine().getStatusCode() == 200
+                            && body != null
+                            && body.getContent() != null) {
+                        try (InputStreamReader reader = new InputStreamReader(body.getContent());
+                             BufferedReader bufferReader = new BufferedReader(reader)
+                        ) {
+                            responseBody = GSON.fromJson(bufferReader, responseClass);
+                        }
+                    } else {
+                        LOGGER.info("Request message failure from {}. {}", uri,
+                                response.getStatusLine());
+                    }
+                } catch (IOException e) {
+                    LOGGER.info("Request message failure from {}", uri, e);
+                }
+
+                return responseBody;
+            });
+
+            futures.add(future);
+        });
+
+        return futures;
     }
 }

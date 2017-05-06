@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(PaxosAcceptorsProxy.class);
@@ -39,6 +41,9 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         promises.add(localPromise);
         otherNodes.forEach(otherNode -> {
             //todo
+            Future<Promise<T>> todoPromise =
+                    new FutureTask<Promise<T>>(() -> new Promise<>(true, null));
+            promises.add(todoPromise);
         });
 
         //Get promises
@@ -48,7 +53,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                 promises) {
             Promise<T> promise;
             try {
-                promise = promiseFuture.get();
+                promise = promiseFuture.get(10, TimeUnit.SECONDS);
             } catch (Exception e) {
                 promise = new Promise<>(false, null);
             }

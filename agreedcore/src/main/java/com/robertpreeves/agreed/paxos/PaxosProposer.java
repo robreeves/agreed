@@ -37,6 +37,8 @@ public class PaxosProposer<T> {
         } else {
             throw new NoConsensusException("Didn't accept value");
         }
+
+        //todo commit once majority reached
     }
 
     public T getCurrent() {

@@ -30,11 +30,17 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T> {
     @Override
     public Accepted accept(Accept<T> accept) {
         //todo accept message to all nodes
+        //todo once quorum is accepted return
         return localAcceptor.accept(accept);
     }
 
     @Override
     public Accept<T> getAccepted() {
         return null;
+    }
+
+    @Override
+    public void commit(Accepted accepted) {
+        
     }
 }

@@ -1,13 +1,26 @@
 package com.robertpreeves.agreed.paxos;
 
+import com.google.gson.Gson;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -19,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(PaxosAcceptorsProxy.class);
+    private static final Gson GSON = new Gson();
     private final PaxosAcceptor localAcceptor;
     private final Set<String> otherNodes;
     private final int majorityCount;
@@ -35,15 +49,48 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 
     @Override
     public Promise<T> prepare(Prepare prepare) {
+        HttpClient httpClient = HttpClients.createDefault();
+
         //Send prepare messages
         List<Future<Promise<T>>> promises = new ArrayList<>();
         Future<Promise<T>> localPromise = executor.submit(() -> localAcceptor.prepare(prepare));
         promises.add(localPromise);
+
+        StringEntity requestBody = new StringEntity(GSON.toJson(prepare), "UTF-8");
         otherNodes.forEach(otherNode -> {
-            //todo
-            Future<Promise<T>> todoPromise =
-                    new FutureTask<Promise<T>>(() -> new Promise<>(true, null));
-            promises.add(todoPromise);
+            Future<Promise<T>> promiseFuture = executor.submit(() -> {
+                String uri = String.format("http://%s%s", otherNode, Uris.PREPARE);
+                HttpPost request = new HttpPost(uri);
+                request.setHeader("content-type", "application/json");
+                request.setEntity(requestBody);
+
+                Promise<T> promise;
+                try {
+                    HttpResponse response = httpClient.execute(request);
+                    HttpEntity body = response.getEntity();
+                    if (response.getStatusLine().getStatusCode() == 200
+                            && body != null
+                            && body.getContent() != null) {
+                        try (InputStreamReader reader = new InputStreamReader(body.getContent());
+                             BufferedReader bufferReader = new BufferedReader(reader)
+                        ) {
+                            promise = GSON.fromJson(bufferReader, Promise.class);
+                            LOGGER.info("Promise response from {}: {}", otherNode, promise);
+                        }
+                    } else {
+                        LOGGER.info("Prepare request message failure from {}. {}", otherNode,
+                                response.getStatusLine());
+                        promise = new Promise<>(false, null);
+                    }
+                } catch (IOException e) {
+                    LOGGER.info("Prepare request message failure from {}", otherNode, e);
+                    promise = new Promise<>(false, null);
+                }
+
+                return promise;
+            });
+
+            promises.add(promiseFuture);
         });
 
         //Get promises
@@ -55,6 +102,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
             try {
                 promise = promiseFuture.get(10, TimeUnit.SECONDS);
             } catch (Exception e) {
+                LOGGER.info("Promise response failure", e);
                 promise = new Promise<>(false, null);
             }
 

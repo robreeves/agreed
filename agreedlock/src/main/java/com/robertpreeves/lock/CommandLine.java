@@ -9,6 +9,12 @@ import java.util.Set;
 
 public class CommandLine {
     @Parameter(
+            names = "-id",
+            description = "The node Id. This must be unique within the cluster."
+    )
+    private Integer nodeId;
+
+    @Parameter(
             names = "-port",
             description = "The port for the public REST API"
     )
@@ -40,6 +46,10 @@ public class CommandLine {
     )
     private Boolean help;
 
+    public Byte getNodeId() {
+        return nodeId.byteValue();
+    }
+
     public Integer getPort() {
         return port;
     }
@@ -65,6 +75,7 @@ public class CommandLine {
 
     public boolean showHelp() {
         return (help != null && help)
+                || nodeId == null
                 || (port == null || port < 1)
                 || (agreedPort == null || agreedPort < 1)
                 || StringUtils.isBlank(directory)

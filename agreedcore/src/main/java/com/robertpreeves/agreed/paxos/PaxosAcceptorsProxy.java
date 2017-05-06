@@ -7,17 +7,14 @@ import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 
 public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
@@ -53,12 +49,16 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 
         //Send prepare messages
         List<Future<Promise<T>>> promises = new ArrayList<>();
+
+        //Local acceptor
         Future<Promise<T>> localPromise = executor.submit(() -> localAcceptor.prepare(prepare));
         promises.add(localPromise);
 
+        //Remote acceptors
         StringEntity requestBody = new StringEntity(GSON.toJson(prepare), "UTF-8");
         otherNodes.forEach(otherNode -> {
             Future<Promise<T>> promiseFuture = executor.submit(() -> {
+                //Create HTTP request
                 String uri = String.format("http://%s%s", otherNode, Uris.PREPARE);
                 HttpPost request = new HttpPost(uri);
                 request.setHeader("content-type", "application/json");
@@ -66,7 +66,10 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 
                 Promise<T> promise;
                 try {
+                    //Make request
                     HttpResponse response = httpClient.execute(request);
+
+                    //Process promise response
                     HttpEntity body = response.getEntity();
                     if (response.getStatusLine().getStatusCode() == 200
                             && body != null
@@ -93,6 +96,12 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
             promises.add(promiseFuture);
         });
 
+        Promise<T> promiseAggregate = reducePromises(promises);
+        LOGGER.info("Reduced Prepare: {}, Promise: {}", prepare, promiseAggregate);
+        return promiseAggregate;
+    }
+
+    private Promise<T> reducePromises(List<Future<Promise<T>>> promises) {
         //Get promises
         int promiseCount = 0;
         Accept<T> previouslyAccepted = null;
@@ -134,8 +143,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         } else {
             promiseAggregate = new Promise<>(false, null);
         }
-
-        LOGGER.info("Prepare: {}, Promise: {}", prepare, promiseAggregate);
 
         return promiseAggregate;
     }

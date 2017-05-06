@@ -52,9 +52,9 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         Future<Promise> localPromise = executor.submit(() -> localAcceptor.prepare(prepare));
         promises.add(localPromise);
 
-        Promise promiseAggregate = reducePromises(promises);
-        LOGGER.info("Reduced Prepare: {}, Promise: {}", prepare, promiseAggregate);
-        return promiseAggregate;
+        Promise reducedPromise = reducePromises(promises);
+        LOGGER.info("Prepare: {}, Reduced Promise: {}", prepare, reducedPromise);
+        return reducedPromise;
     }
 
     private Promise<T> reducePromises(List<Future<Promise>> promises) {
@@ -105,9 +105,50 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 
     @Override
     public Accepted accept(Accept<T> accept) {
-        //todo accept message to all nodes
-        //todo once quorum is accepted return
-        return localAcceptor.accept(accept);
+        //Send accept messages to remote acceptors
+        List<Future<Accepted>> accepteds = makeRequests(Uris.ACCEPT, accept, Accepted.class);
+
+        //Send accept message to local acceptor
+        Future<Accepted> localAccepted = executor.submit(() -> localAcceptor.accept(accept));
+        accepteds.add(localAccepted);
+
+        Accepted reducedAccepteds = reduceAccepteds(accept.sequenceNumber, accepteds);
+        LOGGER.info("Accept: {}, Reduced Accepteds: {}", accept, reducedAccepteds);
+        return reducedAccepteds;
+    }
+
+    private Accepted reduceAccepteds(long sequenceNumber, List<Future<Accepted>> accepteds) {
+        int acceptedCount = 0;
+
+        long highestSequenceNumber = -1;
+        for (Future<Accepted> acceptedFuture :
+                accepteds) {
+            Accepted accepted = null;
+            try {
+                accepted = acceptedFuture.get(10, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                LOGGER.info("Accepted response failure", e);
+            }
+
+            if (accepted != null) {
+                if (Long.compareUnsigned(accepted.sequenceNumber, sequenceNumber) == 0) {
+                    ++acceptedCount;
+                }
+
+                if (Long.compareUnsigned(accepted.sequenceNumber, highestSequenceNumber) > 0) {
+                    highestSequenceNumber = accepted.sequenceNumber;
+                }
+            }
+        }
+
+        Accepted reducedAccepted;
+        if (acceptedCount >= majorityCount) {
+            reducedAccepted = new Accepted(sequenceNumber);
+        } else {
+            reducedAccepted = new Accepted(highestSequenceNumber);
+        }
+
+        return reducedAccepted;
     }
 
     @Override

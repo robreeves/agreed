@@ -46,8 +46,8 @@ public class PaxosProposer<T> implements AutoCloseable {
 
     }
 
-    public T getCurrent() {
-        Accept<T> acceptedValue = acceptorsProxy.getAccepted();
+    public T getCurrent() throws NoConsensusException {
+        Accept<T> acceptedValue = acceptorsProxy.getCurrent();
         if (acceptedValue != null) {
             return acceptedValue.value;
         } else {

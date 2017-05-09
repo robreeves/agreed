@@ -1,5 +1,6 @@
 package com.robertpreeves.agreed.paxos;
 
+import com.robertpreeves.agreed.NoConsensusException;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
@@ -10,7 +11,7 @@ public interface PaxosAcceptor<T> {
 
     Accepted accept(Accept<T> accept);
 
-    Accept<T> getAccepted();
-
     void commit(Accept<T> accepted);
+
+    Accept<T> getCurrent() throws NoConsensusException;
 }

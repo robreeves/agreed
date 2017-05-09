@@ -69,7 +69,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
     }
 
     @Override
-    public synchronized Accept<T> getAccepted() {
+    public synchronized Accept<T> getCurrent() {
         return currentAcceptedValue;
     }
 

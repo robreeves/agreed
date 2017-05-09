@@ -1,6 +1,7 @@
 package com.robertpreeves.agreed.paxos;
 
 import com.google.gson.Gson;
+import com.robertpreeves.agreed.NoConsensusException;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
@@ -162,8 +163,48 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     }
 
     @Override
-    public Accept<T> getAccepted() {
-        return null;
+    public Accept<T> getCurrent() throws NoConsensusException {
+        //Send request to remote acceptors
+        List<Future<Accept>> currents = makeRequests(Uris.READ, null, Accept.class);
+
+        //Send request to local acceptor
+        Future<Accept> localCurrent = executor.submit(() -> localAcceptor.getCurrent());
+        currents.add(localCurrent);
+
+        return reduceCurrents(currents);
+    }
+
+    private Accept reduceCurrents(List<Future<Accept>> currents) throws NoConsensusException {
+        int currentCount = 0;
+        Accept maxCurrent = null;
+
+        for (Future<Accept> currentFuture :
+                currents) {
+
+            Accept current;
+            try {
+                current = currentFuture.get(10, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                LOGGER.info("Current read response failure", e);
+                continue;
+            }
+
+            ++currentCount;
+            if (current != null) {
+                if (maxCurrent == null) {
+                    maxCurrent = current;
+                } else if (Long.compareUnsigned(
+                        current.sequenceNumber, maxCurrent.sequenceNumber) > 0) {
+                    maxCurrent = current;
+                }
+            }
+        }
+
+        if (currentCount >= majorityCount) {
+            return maxCurrent;
+        } else {
+            throw new NoConsensusException("Did not receive read responses from majority nodes");
+        }
     }
 
     private <TRequest, TResponse> List<Future<TResponse>> makeRequests(
@@ -173,22 +214,31 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         //Send prepare messages
         List<Future<TResponse>> futures = new ArrayList<>();
 
-        //Remote acceptors
-        StringEntity requestEntity = new StringEntity(GSON.toJson(requestBody), "UTF-8");
+        //Create response body
+        final StringEntity requestEntity;
+        if (requestBody != null) {
+            requestEntity = new StringEntity(GSON.toJson(requestBody), "UTF-8");
+        } else {
+            requestEntity = null;
+        }
+
         otherNodes.forEach(otherNode -> {
             Future<TResponse> future = executor.submit(() -> {
                 //Create HTTP request
                 String uri = String.format("http://%s%s", otherNode, relativeUri);
                 HttpPost request = new HttpPost(uri);
-                request.setHeader("content-type", "application/json");
-                request.setEntity(requestEntity);
+
+                if (requestEntity != null) {
+                    request.setHeader("content-type", "application/json");
+                    request.setEntity(requestEntity);
+                }
 
                 TResponse responseBody = null;
                 try {
                     //Make request
                     HttpResponse response = httpClient.execute(request);
 
-                    //Process promise response
+                    //Process response
                     HttpEntity body = response.getEntity();
                     if (response.getStatusLine().getStatusCode() == 200
                             && body != null

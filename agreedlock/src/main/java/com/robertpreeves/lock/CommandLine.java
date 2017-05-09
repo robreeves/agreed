@@ -27,13 +27,6 @@ public class CommandLine {
     private Integer agreedPort;
 
     @Parameter(
-            names = "-dir",
-            description = "The directory where the files for distributed access are located. This" +
-                    " should be a path that all nodes can access."
-    )
-    private String directory;
-
-    @Parameter(
             names = "-nodes",
             description = "The list of other nodes in the group in the format hostname:port," +
                     "hostname:port,..."
@@ -58,10 +51,6 @@ public class CommandLine {
         return agreedPort;
     }
 
-    public String getDirectory() {
-        return directory;
-    }
-
     public Set<String> getNodes() {
         Set<String> nodesSet = new HashSet<>();
         String[] nodesArray = nodes.split(",");
@@ -78,7 +67,6 @@ public class CommandLine {
                 || nodeId == null
                 || (port == null || port < 1)
                 || (agreedPort == null || agreedPort < 1)
-                || StringUtils.isBlank(directory)
                 || StringUtils.isBlank(nodes);
     }
 }

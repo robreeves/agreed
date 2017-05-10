@@ -12,7 +12,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
     private static final Logger LOGGER = LogManager.getLogger(LocalPaxosAcceptor.class);
 
     /**
-     * The most recently promised sequence number.
+     * The most recently promised sequence number as an unsigned long.
      */
     private long promisedSequenceNumber;
 

@@ -7,13 +7,13 @@ public interface PaxosAcceptorState<T> {
      * Gets the most recently promised sequence number as an unsigned long
      * @return
      */
-    long getPromiseSeqNumber();
+    long getPromised();
 
     /**
      * Sets the most recently promised sequence number
      * @param seqNumber The new sequence number as an unsigned long
      */
-    void setPromiseSeqNumber(long seqNumber);
+    void setPromised(long seqNumber);
 
     /**
      * Gets the most recently accepted sequence number

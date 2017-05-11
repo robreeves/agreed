@@ -10,23 +10,29 @@ import org.apache.logging.log4j.Logger;
 
 public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
     private static final Logger LOGGER = LogManager.getLogger(LocalPaxosAcceptor.class);
+    private final PaxosAcceptorState<T> acceptorState;
 
-    /**
-     * The most recently promised sequence number as an unsigned long.
-     */
-    private long promisedSequenceNumber;
+    public LocalPaxosAcceptor(PaxosAcceptorState<T> acceptorState) {
+        this.acceptorState = acceptorState;
+    }
 
-    /**
-     * The current accepted value.
-     */
-    private Accept<T> currentAcceptedValue;
+//    /**
+//     * The most recently promised sequence number as an unsigned long.
+//     */
+//    private long promisedSequenceNumber;
+//
+//    /**
+//     * The current accepted value.
+//     */
+//    private Accept<T> currentAcceptedValue;
 
     @Override
     public synchronized Promise prepare(Prepare prepare) {
         Promise<T> promise;
-        if (Long.compareUnsigned(prepare.sequenceNumber, promisedSequenceNumber) > 0) {
-            promisedSequenceNumber = prepare.sequenceNumber;
-            promise = new Promise(true, currentAcceptedValue);
+        if (Long.compareUnsigned(prepare.sequenceNumber, acceptorState.getPromised()) > 0) {
+            //promisedSequenceNumber = prepare.sequenceNumber;
+            acceptorState.setPromised(prepare.sequenceNumber);
+            promise = new Promise(true, acceptorState.getAccepted());
         } else {
             promise = new Promise(false, null);
         }
@@ -38,10 +44,10 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
 
     @Override
     public synchronized Accepted accept(Accept<T> accept) {
-        int seqNumCompare = Long.compare(accept.sequenceNumber, promisedSequenceNumber);
+        int seqNumCompare = Long.compare(accept.sequenceNumber, acceptorState.getPromised());
         if (seqNumCompare == 0) {
             //accept value
-            currentAcceptedValue = accept;
+            acceptorState.setAccepted(accept);
         } else if (seqNumCompare > 0) {
             //this is unexpected. this means the prepare message was never received for this
             //sequence number. the proposer should not send an accept message if the prepare
@@ -56,7 +62,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
         // the proposer
         //about the higher sequence number that has been accepted
 
-        Accepted accepted = new Accepted(currentAcceptedValue.sequenceNumber);
+        Accepted accepted = new Accepted(acceptorState.getAccepted().sequenceNumber);
         LOGGER.info("Accept: {}\nAccepted: {}\nAcceptor: {}", accept, accepted, this);
         return accepted;
     }
@@ -64,19 +70,19 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
     @Override
     public synchronized void commit(Accept<T> accepted) {
         //todo
-        currentAcceptedValue = null;
+        //currentAcceptedValue = null;
         LOGGER.info("Commit: {}\nAcceptor: {}", accepted, this);
     }
 
     @Override
     public synchronized Accept<T> getCurrent() {
-        return currentAcceptedValue;
+        return acceptorState.getCommitted();
     }
 
     @Override
     public synchronized String toString() {
         return String.format("{promisedSequenceNumber: %s, currentAcceptedValue: %s}",
-                promisedSequenceNumber,
-                currentAcceptedValue);
+                acceptorState.getPromised(),
+                acceptorState.getAccepted());
     }
 }

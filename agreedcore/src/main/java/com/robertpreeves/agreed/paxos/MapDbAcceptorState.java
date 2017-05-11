@@ -4,12 +4,12 @@ import com.robertpreeves.agreed.paxos.messages.Accept;
 
 public class MapDbAcceptorState<T> implements PaxosAcceptorState<T> {
     @Override
-    public long getPromiseSeqNumber() {
+    public long getPromised() {
         return 0;
     }
 
     @Override
-    public void setPromiseSeqNumber() {
+    public void setPromised(long seqNumber) {
 
     }
 

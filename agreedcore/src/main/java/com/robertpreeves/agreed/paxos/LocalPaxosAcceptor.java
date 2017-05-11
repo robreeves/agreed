@@ -16,21 +16,10 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
         this.acceptorState = acceptorState;
     }
 
-//    /**
-//     * The most recently promised sequence number as an unsigned long.
-//     */
-//    private long promisedSequenceNumber;
-//
-//    /**
-//     * The current accepted value.
-//     */
-//    private Accept<T> currentAcceptedValue;
-
     @Override
     public synchronized Promise prepare(Prepare prepare) {
         Promise<T> promise;
         if (Long.compareUnsigned(prepare.sequenceNumber, acceptorState.getPromised()) > 0) {
-            //promisedSequenceNumber = prepare.sequenceNumber;
             acceptorState.setPromised(prepare.sequenceNumber);
             promise = new Promise(true, acceptorState.getAccepted());
         } else {
@@ -69,8 +58,20 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
 
     @Override
     public synchronized void commit(Accept<T> accepted) {
-        //todo
-        //currentAcceptedValue = null;
+        //If this is the current accepted value then move it to the committed state.
+        //Other commit values could come from previous rounds so this check is required
+        int seqNumCompare = Long.compare(accepted.sequenceNumber,
+                acceptorState.getAccepted().sequenceNumber);
+        if (seqNumCompare == 0) {
+            acceptorState.setAccepted(null);
+        } else if (seqNumCompare > 0) {
+            throw new IllegalStateException(
+                    String.format("Commit value greater than any value that has been accepted. " +
+                            "A value cannot be committed without being accepted. " +
+                            "Accepted: %s, This: %s", acceptorState.getAccepted(), accepted));
+        }
+        //since only the current committed value is maintained old commit messages are ignored
+
         LOGGER.info("Commit: {}\nAcceptor: {}", accepted, this);
     }
 
@@ -81,8 +82,9 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
 
     @Override
     public synchronized String toString() {
-        return String.format("{promisedSequenceNumber: %s, currentAcceptedValue: %s}",
+        return String.format("{promised: %s, accepted: %s, committed: %s}",
                 acceptorState.getPromised(),
-                acceptorState.getAccepted());
+                acceptorState.getAccepted(),
+                acceptorState.getCommitted());
     }
 }

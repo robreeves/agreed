@@ -16,6 +16,14 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
         this.acceptorState = acceptorState;
     }
 
+    /**
+     * Gets the most recently promised sequence number
+     * @return
+     */
+    public synchronized long getSequenceNumber() {
+        return acceptorState.getPromised();
+    }
+
     @Override
     public synchronized Promise prepare(Prepare prepare) {
         Promise<T> promise;
@@ -82,10 +90,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
 
     @Override
     public synchronized String toString() {
-        return String.format("{promised: %s, accepted: %s, committed: %s}",
-                acceptorState.getPromised(),
-                acceptorState.getAccepted(),
-                acceptorState.getCommitted());
+        return acceptorState.toString();
     }
 
     @Override

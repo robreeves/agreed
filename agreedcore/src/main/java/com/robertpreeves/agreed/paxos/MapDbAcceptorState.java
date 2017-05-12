@@ -33,7 +33,6 @@ public class MapDbAcceptorState<T> implements PaxosAcceptorState<T> {
         dir.mkdirs();
 
         String filePath = String.format("%s/acceptor.db", dir.getAbsolutePath());
-        LOGGER.info("Acceptor state stored at {}", new File(filePath).getAbsolutePath());
 
         db = DBMaker
                 .fileDB(filePath)
@@ -43,6 +42,9 @@ public class MapDbAcceptorState<T> implements PaxosAcceptorState<T> {
 
         mapStore = db.hashMap("map", Serializer.STRING, Serializer.BYTE_ARRAY)
                 .createOrOpen();
+
+        LOGGER.info("Acceptor state stored at {}.\nStarting state {}",
+                new File(filePath).getAbsolutePath(), this);
     }
 
     @Override
@@ -114,5 +116,13 @@ public class MapDbAcceptorState<T> implements PaxosAcceptorState<T> {
             LOGGER.error("Error deserializing", e);
             return null;
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("{promised: %s, accepted: %s, committed: %s}",
+                getPromised(),
+                getAccepted(),
+                getCommitted());
     }
 }

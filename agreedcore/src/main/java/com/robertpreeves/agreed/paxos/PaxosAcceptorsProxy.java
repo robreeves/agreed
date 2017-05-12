@@ -30,18 +30,26 @@ import java.util.concurrent.TimeUnit;
 public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(PaxosAcceptorsProxy.class);
     private static final Gson GSON = new Gson();
-    private final PaxosAcceptor localAcceptor;
+    private final LocalPaxosAcceptor<T> localAcceptor;
     private final Set<String> otherNodes;
     private final int majorityCount;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public PaxosAcceptorsProxy(PaxosAcceptor<T> localAcceptor, Set<String> otherNodes) {
+    public PaxosAcceptorsProxy(LocalPaxosAcceptor<T> localAcceptor, Set<String> otherNodes) {
         this.localAcceptor = localAcceptor;
         this.otherNodes = otherNodes;
 
         //the total number of nodes must be odd so otherNodes will be even.
         //the majority is half of the otherNodes + 1.
         majorityCount = (otherNodes.size() / 2) + 1;
+    }
+
+    /**
+     * Gets the most recently promised sequence number
+     * @return
+     */
+    public long getSequenceNumber() {
+        return localAcceptor.getSequenceNumber();
     }
 
     @Override

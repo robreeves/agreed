@@ -13,7 +13,6 @@ public class PaxosProposer<T> implements AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(PaxosProposer.class);
     private final PaxosAcceptorsProxy<T> acceptorsProxy;
     private final byte nodeId;
-    private long lastKnownSequenceNumber;
 
     public PaxosProposer(byte nodeId, PaxosAcceptorsProxy<T> acceptorsProxy) {
         this.nodeId = nodeId;
@@ -22,8 +21,8 @@ public class PaxosProposer<T> implements AutoCloseable {
 
     public synchronized T propose(T value) throws NoConsensusException {
         //prepare message
-        lastKnownSequenceNumber = SequenceNumber.getNext(nodeId, lastKnownSequenceNumber);
-        Prepare prepare = new Prepare(lastKnownSequenceNumber);
+        long sequenceNumber = SequenceNumber.getNext(nodeId, acceptorsProxy.getSequenceNumber());
+        Prepare prepare = new Prepare(sequenceNumber);
         Promise<T> promise = acceptorsProxy.prepare(prepare);
         if (!promise.promised) {
             throw new NoConsensusException(String.format("Not accepted as proposer. %s", prepare));
@@ -35,7 +34,6 @@ public class PaxosProposer<T> implements AutoCloseable {
         Accept<T> accept = new Accept(prepare.sequenceNumber, value);
         Accepted accepted = acceptorsProxy.accept(accept);
         if (Long.compareUnsigned(accept.sequenceNumber, accepted.sequenceNumber) != 0) {
-            lastKnownSequenceNumber = accepted.sequenceNumber;
             throw new NoConsensusException("Didn't accept value");
         }
 

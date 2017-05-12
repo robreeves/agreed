@@ -8,7 +8,7 @@ import com.robertpreeves.agreed.paxos.messages.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
+public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(LocalPaxosAcceptor.class);
     private final PaxosAcceptorState<T> acceptorState;
 
@@ -86,5 +86,10 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
                 acceptorState.getPromised(),
                 acceptorState.getAccepted(),
                 acceptorState.getCommitted());
+    }
+
+    @Override
+    public void close() throws Exception {
+        acceptorState.close();
     }
 }

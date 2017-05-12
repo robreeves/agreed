@@ -8,25 +8,20 @@ import com.robertpreeves.agreed.paxos.messages.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
+public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(LocalPaxosAcceptor.class);
+    private final PaxosAcceptorState<T> acceptorState;
 
-    /**
-     * The most recently promised sequence number.
-     */
-    private long promisedSequenceNumber;
-
-    /**
-     * The current accepted value.
-     */
-    private Accept<T> currentAcceptedValue;
+    public LocalPaxosAcceptor(PaxosAcceptorState<T> acceptorState) {
+        this.acceptorState = acceptorState;
+    }
 
     @Override
     public synchronized Promise prepare(Prepare prepare) {
         Promise<T> promise;
-        if (Long.compareUnsigned(prepare.sequenceNumber, promisedSequenceNumber) > 0) {
-            promisedSequenceNumber = prepare.sequenceNumber;
-            promise = new Promise(true, currentAcceptedValue);
+        if (Long.compareUnsigned(prepare.sequenceNumber, acceptorState.getPromised()) > 0) {
+            acceptorState.setPromised(prepare.sequenceNumber);
+            promise = new Promise(true, acceptorState.getAccepted());
         } else {
             promise = new Promise(false, null);
         }
@@ -38,10 +33,10 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
 
     @Override
     public synchronized Accepted accept(Accept<T> accept) {
-        int seqNumCompare = Long.compare(accept.sequenceNumber, promisedSequenceNumber);
+        int seqNumCompare = Long.compare(accept.sequenceNumber, acceptorState.getPromised());
         if (seqNumCompare == 0) {
             //accept value
-            currentAcceptedValue = accept;
+            acceptorState.setAccepted(accept);
         } else if (seqNumCompare > 0) {
             //this is unexpected. this means the prepare message was never received for this
             //sequence number. the proposer should not send an accept message if the prepare
@@ -56,27 +51,45 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T> {
         // the proposer
         //about the higher sequence number that has been accepted
 
-        Accepted accepted = new Accepted(currentAcceptedValue.sequenceNumber);
+        Accepted accepted = new Accepted(acceptorState.getAccepted().sequenceNumber);
         LOGGER.info("Accept: {}\nAccepted: {}\nAcceptor: {}", accept, accepted, this);
         return accepted;
     }
 
     @Override
     public synchronized void commit(Accept<T> accepted) {
-        //todo
-        currentAcceptedValue = null;
+        //If this is the current accepted value then move it to the committed state.
+        //Other commit values could come from previous rounds so this check is required
+        int seqNumCompare = Long.compare(accepted.sequenceNumber,
+                acceptorState.getAccepted().sequenceNumber);
+        if (seqNumCompare == 0) {
+            acceptorState.setAccepted(null);
+        } else if (seqNumCompare > 0) {
+            throw new IllegalStateException(
+                    String.format("Commit value greater than any value that has been accepted. " +
+                            "A value cannot be committed without being accepted. " +
+                            "Accepted: %s, This: %s", acceptorState.getAccepted(), accepted));
+        }
+        //since only the current committed value is maintained old commit messages are ignored
+
         LOGGER.info("Commit: {}\nAcceptor: {}", accepted, this);
     }
 
     @Override
     public synchronized Accept<T> getCurrent() {
-        return currentAcceptedValue;
+        return acceptorState.getCommitted();
     }
 
     @Override
     public synchronized String toString() {
-        return String.format("{promisedSequenceNumber: %s, currentAcceptedValue: %s}",
-                promisedSequenceNumber,
-                currentAcceptedValue);
+        return String.format("{promised: %s, accepted: %s, committed: %s}",
+                acceptorState.getPromised(),
+                acceptorState.getAccepted(),
+                acceptorState.getCommitted());
+    }
+
+    @Override
+    public void close() throws Exception {
+        acceptorState.close();
     }
 }

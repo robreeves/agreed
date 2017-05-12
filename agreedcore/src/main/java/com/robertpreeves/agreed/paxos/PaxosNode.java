@@ -29,5 +29,6 @@ public class PaxosNode<T> implements AgreedNode<T> {
     public void close() throws Exception {
         httpAcceptor.close();
         proposer.close();
+        acceptor.close();
     }
 }

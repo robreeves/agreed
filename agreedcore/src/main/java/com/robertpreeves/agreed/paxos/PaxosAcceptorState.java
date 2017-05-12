@@ -2,7 +2,8 @@ package com.robertpreeves.agreed.paxos;
 
 import com.robertpreeves.agreed.paxos.messages.Accept;
 
-public interface PaxosAcceptorState<T> {
+
+public interface PaxosAcceptorState<T> extends AutoCloseable {
     /**
      * Gets the most recently promised sequence number as an unsigned long
      * @return

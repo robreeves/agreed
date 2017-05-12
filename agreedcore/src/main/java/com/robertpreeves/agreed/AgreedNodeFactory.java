@@ -2,6 +2,7 @@ package com.robertpreeves.agreed;
 
 import com.robertpreeves.agreed.paxos.LocalPaxosAcceptor;
 import com.robertpreeves.agreed.paxos.MapDbAcceptorState;
+import com.robertpreeves.agreed.paxos.PaxosAcceptorState;
 import com.robertpreeves.agreed.paxos.PaxosAcceptorsProxy;
 import com.robertpreeves.agreed.paxos.PaxosHttpAcceptor;
 import com.robertpreeves.agreed.paxos.PaxosNode;
@@ -29,7 +30,8 @@ public class AgreedNodeFactory {
             throw new IllegalArgumentException("There must be at least three nodes");
         }
 
-        LocalPaxosAcceptor localAcceptor = new LocalPaxosAcceptor(new MapDbAcceptorState<>());
+        PaxosAcceptorState acceptorState = new MapDbAcceptorState<>(nodeId);
+        LocalPaxosAcceptor localAcceptor = new LocalPaxosAcceptor(acceptorState);
         PaxosAcceptorsProxy acceptorsProxy = new PaxosAcceptorsProxy(localAcceptor, otherNodes);
         PaxosHttpAcceptor acceptorSvc = new PaxosHttpAcceptor(port, localAcceptor);
         PaxosProposer localProposer = new PaxosProposer(nodeId, acceptorsProxy);

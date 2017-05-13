@@ -6,11 +6,10 @@ import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.Random;
 
 public class PaxosProposer<T> implements AutoCloseable {
-    private static final Logger LOGGER = LogManager.getLogger(PaxosProposer.class);
+    private static final Random RANDOM = new Random();
     private final PaxosAcceptorsProxy<T> acceptorsProxy;
     private final byte nodeId;
 
@@ -20,6 +19,8 @@ public class PaxosProposer<T> implements AutoCloseable {
     }
 
     public synchronized T propose(T value) throws NoConsensusException {
+        randomWait();
+
         //prepare message
         long sequenceNumber = SequenceNumber.getNext(nodeId, acceptorsProxy.getSequenceNumber());
         Prepare prepare = new Prepare(sequenceNumber);
@@ -56,5 +57,19 @@ public class PaxosProposer<T> implements AutoCloseable {
     @Override
     public void close() throws Exception {
         acceptorsProxy.close();
+    }
+
+    /**
+     * Waits for a random amount of time.
+     * This is used to reduce the chances of proposers always superseding an in progress proposal.
+     * This scenario prevents a value for ever making to the the commit phase.
+     * The wait should make it so a proposal has time to get to the commit state and no pattern
+     * of propose, get superseded, try to propose again, get superseded,... occurs.
+     */
+    private void randomWait() {
+        try {
+            Thread.sleep(RANDOM.nextInt(100));
+        } catch (InterruptedException e) {
+        }
     }
 }

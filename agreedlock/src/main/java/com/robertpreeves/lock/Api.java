@@ -28,7 +28,6 @@ import static spark.Service.ignite;
 
 public class Api {
     private static final Logger LOGGER = LogManager.getLogger(Api.class);
-    private static final Random RANDOM = new Random();
     private static final Gson GSON = new Gson();
     private static final String URI_TIME = "/api/time";
     private static final String URI_LEADER = "/api/leader/time";
@@ -133,15 +132,6 @@ public class Api {
     }
 
     private String proposeLeader() throws NoConsensusException {
-        //This is only for demonstration purposes and would not be in a production version of this.
-        //This is used to show how to requests that detect failures handle competing proposals.
-        //For demonstrations two requests are made in synchronously and this random sleeps allow
-        //them to propose a new leader in a random order.
-        try {
-            Thread.sleep(RANDOM.nextInt(25));
-        } catch (InterruptedException e) {
-        }
-
         return agreedNode.propose(hostnamePort);
     }
 }

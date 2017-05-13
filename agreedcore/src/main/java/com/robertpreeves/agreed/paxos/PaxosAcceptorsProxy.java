@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.robertpreeves.agreed.NoConsensusException;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Accepted;
+import com.robertpreeves.agreed.paxos.messages.PaxosResponseException;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
@@ -78,7 +79,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
             try {
                 promise = promiseFuture.get(10, TimeUnit.SECONDS);
             } catch (Exception e) {
-                LOGGER.info("Promise response failure", e);
                 promise = new Promise<>(false, null);
             }
 
@@ -138,7 +138,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
             try {
                 accepted = acceptedFuture.get(10, TimeUnit.SECONDS);
             } catch (Exception e) {
-                LOGGER.info("Accepted response failure", e);
             }
 
             if (accepted != null) {
@@ -182,7 +181,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                     ++currentCount;
                 }
             } catch (Exception e) {
-                LOGGER.info("Commit response failure", e);
             }
         }
 
@@ -219,7 +217,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
             try {
                 current = currentFuture.get(10, TimeUnit.SECONDS);
             } catch (Exception e) {
-                LOGGER.info("Current read response failure", e);
                 continue;
             }
 
@@ -283,11 +280,13 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                             responseBody = GSON.fromJson(bufferReader, responseClass);
                         }
                     } else {
-                        LOGGER.info("Request message failure from {}. {}", uri,
+                        LOGGER.error("Request message failure from {}. {}", uri,
                                 response.getStatusLine());
+                        throw new PaxosResponseException();
                     }
                 } catch (IOException e) {
-                    LOGGER.info("Request message failure from {}", uri, e);
+                    LOGGER.error("Request message failure from {}", uri, e);
+                    throw new PaxosResponseException();
                 }
 
                 return responseBody;
@@ -318,7 +317,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                 request.setHeader("content-type", "application/json");
                 request.setEntity(requestEntity);
 
-                Boolean result = true;
                 try {
                     //Make request
                     HttpResponse response = httpClient.execute(request);
@@ -326,16 +324,16 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                     //Process response
                     HttpEntity body = response.getEntity();
                     if (response.getStatusLine().getStatusCode() != 200) {
-                        result = false;
-                        LOGGER.info("Request message failure from {}. {}", uri,
+                        LOGGER.error("Request message failure from {}. {}", uri,
                                 response.getStatusLine());
+                        throw new PaxosResponseException();
                     }
                 } catch (IOException e) {
-                    result = false;
-                    LOGGER.info("Request message failure from {}", uri, e);
+                    LOGGER.error("Request message failure from {}", uri, e);
+                    throw new PaxosResponseException();
                 }
 
-                return result;
+                return true;
             });
 
             futures.add(future);

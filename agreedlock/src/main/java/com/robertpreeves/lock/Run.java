@@ -29,7 +29,7 @@ public class Run {
                      AgreedNodeFactory.create(
                              cli.getNodeId(), cli.getAgreedPort(), cli.getNodes())) {
 
-            PublicApi api = new PublicApi(cli.getPort(), agreeNode);
+            Api api = new Api(cli.getPort(), agreeNode);
 
             //run forever
             Thread.currentThread().join();

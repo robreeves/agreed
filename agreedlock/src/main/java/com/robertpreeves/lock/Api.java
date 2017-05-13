@@ -20,14 +20,13 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import spark.Request;
 import spark.Response;
 import spark.Service;
 
 import static spark.Service.ignite;
 
-public class PublicApi {
-    private static final Logger LOGGER = LogManager.getLogger(PublicApi.class);
+public class Api {
+    private static final Logger LOGGER = LogManager.getLogger(Api.class);
     private static final Date DATE = new Date();
     private static final Gson GSON = new Gson();
     private static final String URI_TIME = "/api/time";
@@ -36,7 +35,7 @@ public class PublicApi {
     private final String hostnamePort;
     private final AgreedNode<String> agreedNode;
 
-    public PublicApi(int port, AgreedNode<String> agreedNode) throws UnknownHostException {
+    public Api(int port, AgreedNode<String> agreedNode) throws UnknownHostException {
         this.agreedNode = agreedNode;
         this.hostnamePort = String.format("%s:%s", InetAddress.getLocalHost().getHostName(), port);
         initHttpAPI(port);

@@ -28,16 +28,17 @@ import static spark.Service.ignite;
 
 public class PublicApi {
     private static final Logger LOGGER = LogManager.getLogger(PublicApi.class);
+    private static final Date DATE = new Date();
     private static final Gson GSON = new Gson();
     private static final String URI_TIME = "/api/time";
     private static final String URI_LEADER = "/api/leader/time";
     private static final HttpClient HTTP = HttpClients.createDefault();
-    private final String hostname;
+    private final String hostnamePort;
     private final AgreedNode<String> agreedNode;
 
     public PublicApi(int port, AgreedNode<String> agreedNode) throws UnknownHostException {
         this.agreedNode = agreedNode;
-        this.hostname = InetAddress.getLocalHost().getHostName();
+        this.hostnamePort = String.format("%s:%s", InetAddress.getLocalHost().getHostName(), port);
         initHttpAPI(port);
     }
 
@@ -45,38 +46,50 @@ public class PublicApi {
         Service http = ignite()
                 .port(port);
 
-        Date date = new Date();
-        http.get(URI_LEADER, (request, response) -> date.getTime());
-
+        http.get(URI_LEADER, (request, response) -> getLocalTime(response));
         http.get(URI_TIME, (request, response) -> getLeaderTime(request, response), GSON::toJson);
 
         http.awaitInitialization();
         LOGGER.info("Listening on {}", port);
     }
 
+    private byte[] getLocalTime(Response response) {
+        response.type("application/octet-stream");
+
+        ByteBuffer timeBuffer = ByteBuffer.allocate(Long.BYTES);
+        timeBuffer.putLong(new Date().getTime());
+        return timeBuffer.array();
+    }
+
     private TimeResponse getLeaderTime(Request request, Response response) {
+        response.type("application/json");
+
         TimeResponse timeResponse;
         try {
             //Get the current leader
             String leaderHostPort = agreedNode.getCurrent();
             if (StringUtils.isBlank(leaderHostPort)) {
-                LOGGER.info("No leader. Proposing to be leader ({})...", hostname);
-                leaderHostPort = agreedNode.propose(hostname);
+                LOGGER.info("No leader. Proposing to be leader ({})...", hostnamePort);
+                leaderHostPort = agreedNode.propose(hostnamePort);
             }
 
             //Get leader time
             timeResponse = getLeaderTime(leaderHostPort);
             if (timeResponse.timestamp == -1) {
                 LOGGER.info("Leader {} failed. Proposing to be leader ({})...",
-                        leaderHostPort, hostname);
-                leaderHostPort = agreedNode.propose(hostname);
+                        leaderHostPort, hostnamePort);
+                leaderHostPort = agreedNode.propose(hostnamePort);
 
                 //try to get the time again
                 //it doesnt matter if this host is the leader, just that a leader was chosen
                 //fail if cant get time again
-                timeResponse = getLeaderTime(leaderHostPort);
-                if (timeResponse.timestamp == -1) {
-                    response.status(503);
+                if (StringUtils.equalsIgnoreCase(leaderHostPort, hostnamePort)) {
+                    timeResponse = new TimeResponse(new Date().getTime(), hostnamePort);
+                } else {
+                    timeResponse = getLeaderTime(leaderHostPort);
+                    if (timeResponse.timestamp == -1) {
+                        response.status(503);
+                    }
                 }
             }
 

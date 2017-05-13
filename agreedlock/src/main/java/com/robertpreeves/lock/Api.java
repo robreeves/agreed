@@ -96,7 +96,7 @@ public class Api {
             return timeResponse;
 
         } catch (NoConsensusException e) {
-            LOGGER.error("Consensus issue", e);
+            //LOGGER.error("Consensus issue", e);
             response.status(503);
             response.type("text/plain");
             return "Nodes could not come to consensus to determine a leader";

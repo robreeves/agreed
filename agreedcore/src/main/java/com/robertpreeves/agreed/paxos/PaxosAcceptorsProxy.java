@@ -181,6 +181,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                     ++currentCount;
                 }
             } catch (Exception e) {
+
             }
         }
 
@@ -280,12 +281,12 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                             responseBody = GSON.fromJson(bufferReader, responseClass);
                         }
                     } else {
-                        LOGGER.error("Request message failure from {}. {}", uri,
-                                response.getStatusLine());
+//                        LOGGER.error("Request message failure from {}. {}", uri,
+//                                response.getStatusLine());
                         throw new PaxosResponseException();
                     }
                 } catch (IOException e) {
-                    LOGGER.error("Request message failure from {}", uri, e);
+//                    LOGGER.error("Request message failure from {}", uri, e);
                     throw new PaxosResponseException();
                 }
 
@@ -324,12 +325,12 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                     //Process response
                     HttpEntity body = response.getEntity();
                     if (response.getStatusLine().getStatusCode() != 200) {
-                        LOGGER.error("Request message failure from {}. {}", uri,
-                                response.getStatusLine());
+//                        LOGGER.error("Request message failure from {}. {}", uri,
+//                                response.getStatusLine());
                         throw new PaxosResponseException();
                     }
                 } catch (IOException e) {
-                    LOGGER.error("Request message failure from {}", uri, e);
+//                    LOGGER.error("Request message failure from {}", uri, e);
                     throw new PaxosResponseException();
                 }
 

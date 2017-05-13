@@ -67,18 +67,18 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     @Override
     public synchronized void commit(Accept<T> accepted) {
         //If this is the current accepted value then move it to the committed state.
-        //Other commit values could come from previous rounds so this check is required
+        //Other commit values could come from previous rounds so this check is required.
+        //Previous rounds are ignored since this implementation only maintains the current value.
         int seqNumCompare = Long.compare(accepted.sequenceNumber,
                 acceptorState.getAccepted().sequenceNumber);
         if (seqNumCompare == 0) {
-            acceptorState.setAccepted(null);
+            acceptorState.commitAccepted();
         } else if (seqNumCompare > 0) {
             throw new IllegalStateException(
                     String.format("Commit value greater than any value that has been accepted. " +
                             "A value cannot be committed without being accepted. " +
                             "Accepted: %s, This: %s", acceptorState.getAccepted(), accepted));
         }
-        //since only the current committed value is maintained old commit messages are ignored
 
         LOGGER.info("Commit: {}\nAcceptor: {}", accepted, this);
     }

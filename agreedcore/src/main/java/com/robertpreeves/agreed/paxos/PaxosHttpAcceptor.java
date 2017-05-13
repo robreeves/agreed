@@ -1,6 +1,7 @@
 package com.robertpreeves.agreed.paxos;
 
 import com.google.gson.Gson;
+import com.robertpreeves.agreed.NoConsensusException;
 import com.robertpreeves.agreed.paxos.messages.Accept;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 
@@ -38,6 +39,22 @@ public class PaxosHttpAcceptor<T> implements AutoCloseable {
         httpSvr.post(Uris.ACCEPT, MIME_JSON, (request, response) ->
                         process(request, response, Accept.class, acceptor::accept),
                 GSON::toJson);
+
+        httpSvr.post(
+                Uris.COMMIT, MIME_JSON,
+                (request, response) -> {
+                    process(request, response, Accept.class, accepted -> {
+                        try {
+                            acceptor.commit(accepted);
+                        } catch (NoConsensusException e) {
+                            response.status(500);
+                        }
+                        return null;
+                    });
+
+                    return response;
+                }
+        );
 
         httpSvr.awaitInitialization();
         LOGGER.info("Paxos HTTP acceptor listening on {}", port);

@@ -11,7 +11,7 @@ public interface PaxosAcceptor<T> {
 
     Accepted accept(Accept<T> accept);
 
-    void commit(Accept<T> accepted);
+    void commit(Accept<T> accepted) throws NoConsensusException;
 
     Accept<T> getCurrent() throws NoConsensusException;
 }

@@ -22,10 +22,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger(PaxosAcceptorsProxy.class);
@@ -161,8 +163,32 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     }
 
     @Override
-    public void commit(Accept<T> accepted) {
-        localAcceptor.commit(accepted);
+    public void commit(Accept<T> accepted) throws NoConsensusException {
+        //Send commit messages to remote acceptors
+        List<Future<Boolean>> commits = makeRequests(Uris.COMMIT, accepted);
+
+        //Send commit message to local acceptor
+        Future<Boolean> localCommit = executor.submit(() -> {
+            localAcceptor.commit(accepted);
+            return true;
+        });
+
+        commits.add(localCommit);
+
+        int currentCount = 0;
+        for (Future<Boolean> commit : commits){
+            try {
+                if (commit.get(10, TimeUnit.SECONDS)) {
+                    ++currentCount;
+                }
+            } catch (Exception e) {
+                LOGGER.info("Commit response failure", e);
+            }
+        }
+
+        if (currentCount < majorityCount) {
+            throw new NoConsensusException("Could not commit value");
+        }
     }
 
     @Override
@@ -265,6 +291,51 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                 }
 
                 return responseBody;
+            });
+
+            futures.add(future);
+        });
+
+        return futures;
+    }
+
+    private <TRequest> List<Future<Boolean>> makeRequests(
+            String relativeUri, TRequest requestBody) {
+        HttpClient httpClient = HttpClients.createDefault();
+
+        //Send prepare messages
+        List<Future<Boolean>> futures = new ArrayList<>();
+
+        //Create response body
+        final StringEntity requestEntity =
+                new StringEntity(GSON.toJson(requestBody), "UTF-8");
+
+        otherNodes.forEach(otherNode -> {
+            Future future = executor.submit(() -> {
+                //Create HTTP request
+                String uri = String.format("http://%s%s", otherNode, relativeUri);
+                HttpPost request = new HttpPost(uri);
+                request.setHeader("content-type", "application/json");
+                request.setEntity(requestEntity);
+
+                Boolean result = true;
+                try {
+                    //Make request
+                    HttpResponse response = httpClient.execute(request);
+
+                    //Process response
+                    HttpEntity body = response.getEntity();
+                    if (response.getStatusLine().getStatusCode() != 200) {
+                        result = false;
+                        LOGGER.info("Request message failure from {}. {}", uri,
+                                response.getStatusLine());
+                    }
+                } catch (IOException e) {
+                    result = false;
+                    LOGGER.info("Request message failure from {}", uri, e);
+                }
+
+                return result;
             });
 
             futures.add(future);

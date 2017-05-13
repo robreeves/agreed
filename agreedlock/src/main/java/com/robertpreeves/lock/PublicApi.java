@@ -47,7 +47,7 @@ public class PublicApi {
                 .port(port);
 
         http.get(URI_LEADER, (request, response) -> getLocalTime(response));
-        http.get(URI_TIME, (request, response) -> getLeaderTime(request, response), GSON::toJson);
+        http.get(URI_TIME, (request, response) -> getLeaderTime(response), GSON::toJson);
 
         http.awaitInitialization();
         LOGGER.info("Listening on {}", port);
@@ -61,10 +61,9 @@ public class PublicApi {
         return timeBuffer.array();
     }
 
-    private TimeResponse getLeaderTime(Request request, Response response) {
+    private Object getLeaderTime(Response response) {
         response.type("application/json");
 
-        TimeResponse timeResponse;
         try {
             //Get the current leader
             String leaderHostPort = agreedNode.getCurrent();
@@ -74,56 +73,62 @@ public class PublicApi {
             }
 
             //Get leader time
+            TimeResponse timeResponse;
             timeResponse = getLeaderTime(leaderHostPort);
-            if (timeResponse.timestamp == -1) {
+            if (timeResponse == null) {
                 LOGGER.info("Leader {} failed. Proposing to be leader ({})...",
                         leaderHostPort, hostnamePort);
-                leaderHostPort = agreedNode.propose(hostnamePort);
+                String newLeaderHostPort = agreedNode.propose(hostnamePort);
 
                 //try to get the time again
                 //it doesnt matter if this host is the leader, just that a leader was chosen
                 //fail if cant get time again
-                if (StringUtils.equalsIgnoreCase(leaderHostPort, hostnamePort)) {
-                    timeResponse = new TimeResponse(new Date().getTime(), hostnamePort);
-                } else {
-                    timeResponse = getLeaderTime(leaderHostPort);
-                    if (timeResponse.timestamp == -1) {
-                        response.status(503);
-                    }
+                timeResponse = getLeaderTime(newLeaderHostPort);
+                if (timeResponse == null) {
+                    response.status(503);
+                    response.type("text/plain");
+                    return String.format("Failed after two attempts. " +
+                                            "Could not get time from leader %s and %s",
+                                    leaderHostPort, newLeaderHostPort);
                 }
             }
+
+            return timeResponse;
 
         } catch (NoConsensusException e) {
             LOGGER.error("Consensus issue", e);
             response.status(503);
-            timeResponse = new TimeResponse(-1, null);
+            response.type("text/plain");
+            return "Nodes could not come to consensus to determine a leader";
         }
-
-        return timeResponse;
     }
 
     private TimeResponse getLeaderTime(String leaderHostPort) {
-        long timestamp = -1;
+        if (StringUtils.equalsIgnoreCase(leaderHostPort, hostnamePort)) {
+            //this is the leader
+            return new TimeResponse(new Date().getTime(), leaderHostPort);
+        } else {
+            //leader is a remote node
+            long timestamp = -1;
 
-        //Get leader time
-        HttpGet get = new HttpGet(String.format("http://%s%s", leaderHostPort, URI_LEADER));
-        try {
-            HttpResponse leaderResponse = HTTP.execute(get);
-            int statusCode = leaderResponse.getStatusLine().getStatusCode();
-            if (statusCode == 200) {
-                try (InputStream in = leaderResponse.getEntity().getContent()) {
-                    byte[] timestampBytes = new byte[Long.BYTES];
-                    in.read(timestampBytes, 0, timestampBytes.length);
-                    timestamp = ByteBuffer.wrap(timestampBytes).getLong();
+            //Get leader time
+            HttpGet get = new HttpGet(String.format("http://%s%s", leaderHostPort, URI_LEADER));
+            try {
+                HttpResponse leaderResponse = HTTP.execute(get);
+                int statusCode = leaderResponse.getStatusLine().getStatusCode();
+                if (statusCode == 200) {
+                    try (InputStream in = leaderResponse.getEntity().getContent()) {
+                        byte[] timestampBytes = new byte[Long.BYTES];
+                        in.read(timestampBytes, 0, timestampBytes.length);
+                        timestamp = ByteBuffer.wrap(timestampBytes).getLong();
+                    }
+                } else if (statusCode >= 500) {
+                    LOGGER.info("Leader {} failed with status code {}", leaderHostPort, statusCode);
                 }
-            } else if (statusCode >= 500) {
-                LOGGER.info("Leader {} failed with status code {}", leaderHostPort, statusCode);
+            } catch (IOException e) {
             }
-        } catch (IOException e) {
-        }
 
-        return timestamp == -1 ?
-                new TimeResponse(timestamp, null)
-                : new TimeResponse(timestamp, leaderHostPort);
+            return timestamp == -1 ? null : new TimeResponse(timestamp, leaderHostPort);
+        }
     }
 }

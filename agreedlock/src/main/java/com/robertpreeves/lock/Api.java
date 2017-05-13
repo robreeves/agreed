@@ -27,7 +27,6 @@ import static spark.Service.ignite;
 
 public class Api {
     private static final Logger LOGGER = LogManager.getLogger(Api.class);
-    private static final Date DATE = new Date();
     private static final Gson GSON = new Gson();
     private static final String URI_TIME = "/api/time";
     private static final String URI_LEADER = "/api/leader/time";

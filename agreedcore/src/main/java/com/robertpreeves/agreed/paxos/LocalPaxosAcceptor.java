@@ -34,7 +34,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
             promise = new Promise(false, null);
         }
 
-        LOGGER.info("Prepare: {}\nPromise: {}\nAcceptor: {}", prepare, promise, this);
+        LOGGER.info("Prepare: {}\nPromise: {}\nAcceptorState: {}", prepare, promise, this);
 
         return promise;
     }
@@ -56,7 +56,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
         //Return the current accepted value.
         //The proposer will check the sequence number to see if its value was accepted.
         Accepted accepted = new Accepted(acceptorState.getAccepted().sequenceNumber);
-        LOGGER.info("Accept: {}\nAccepted: {}\nAcceptor: {}", accept, accepted, this);
+        LOGGER.info("Accept: {}\nAccepted: {}\nAcceptorState: {}", accept, accepted, this);
         return accepted;
     }
 
@@ -85,7 +85,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
             }
         }
 
-        LOGGER.info("Commit: {}\nAcceptor: {}", committed, this);
+        LOGGER.info("Commit: {}\nAcceptorState: {}", committed, this);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public synchronized void close() throws Exception {
         acceptorState.close();
     }
 }

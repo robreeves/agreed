@@ -1,6 +1,7 @@
 package com.robertpreeves.lock;
 
 
+import com.google.gson.Gson;
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.NoConsensusException;
 
@@ -12,11 +13,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -30,6 +28,7 @@ import static spark.Service.ignite;
 
 public class PublicApi {
     private static final Logger LOGGER = LogManager.getLogger(PublicApi.class);
+    private static final Gson GSON = new Gson();
     private static final String URI_TIME = "/api/time";
     private static final String URI_LEADER = "/api/leader/time";
     private static final HttpClient HTTP = HttpClients.createDefault();
@@ -49,14 +48,14 @@ public class PublicApi {
         Date date = new Date();
         http.get(URI_LEADER, (request, response) -> date.getTime());
 
-        http.get(URI_TIME, (request, response) -> getLeaderTime(request, response));
+        http.get(URI_TIME, (request, response) -> getLeaderTime(request, response), GSON::toJson);
 
         http.awaitInitialization();
         LOGGER.info("Listening on {}", port);
     }
 
-    private long getLeaderTime(Request request, Response response) {
-        long timestamp = -1;
+    private TimeResponse getLeaderTime(Request request, Response response) {
+        TimeResponse timeResponse;
         try {
             //Get the current leader
             String leaderHostPort = agreedNode.getCurrent();
@@ -66,8 +65,8 @@ public class PublicApi {
             }
 
             //Get leader time
-            timestamp = getLeaderTime(leaderHostPort);
-            if (timestamp == -1) {
+            timeResponse = getLeaderTime(leaderHostPort);
+            if (timeResponse.timestamp == -1) {
                 LOGGER.info("Leader {} failed. Proposing to be leader ({})...",
                         leaderHostPort, hostname);
                 leaderHostPort = agreedNode.propose(hostname);
@@ -75,8 +74,8 @@ public class PublicApi {
                 //try to get the time again
                 //it doesnt matter if this host is the leader, just that a leader was chosen
                 //fail if cant get time again
-                timestamp = getLeaderTime(leaderHostPort);
-                if (timestamp == -1) {
+                timeResponse = getLeaderTime(leaderHostPort);
+                if (timeResponse.timestamp == -1) {
                     response.status(503);
                 }
             }
@@ -84,12 +83,13 @@ public class PublicApi {
         } catch (NoConsensusException e) {
             LOGGER.error("Consensus issue", e);
             response.status(503);
+            timeResponse = new TimeResponse(-1, null);
         }
 
-        return timestamp;
+        return timeResponse;
     }
 
-    private long getLeaderTime(String leaderHostPort) {
+    private TimeResponse getLeaderTime(String leaderHostPort) {
         long timestamp = -1;
 
         //Get leader time
@@ -109,6 +109,8 @@ public class PublicApi {
         } catch (IOException e) {
         }
 
-        return timestamp;
+        return timestamp == -1 ?
+                new TimeResponse(timestamp, null)
+                : new TimeResponse(timestamp, leaderHostPort);
     }
 }

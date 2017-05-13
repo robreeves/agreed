@@ -56,6 +56,8 @@ public class PaxosHttpAcceptor<T> implements AutoCloseable {
                 }
         );
 
+        httpSvr.post(Uris.READ, (request, response) -> acceptor.getCurrent(), GSON::toJson);
+
         httpSvr.awaitInitialization();
         LOGGER.info("Paxos HTTP acceptor listening on {}", port);
     }

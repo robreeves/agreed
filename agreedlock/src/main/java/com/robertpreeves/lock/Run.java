@@ -18,35 +18,14 @@ public class Run {
             return;
         }
 
-        try (AgreedNode<FileLock> agreeNode =
+        try (AgreedNode<String> agreeNode =
                      AgreedNodeFactory.create(
                              cli.getNodeId(), cli.getAgreedPort(), cli.getNodes())) {
 
-            //testing
-            if (cli.getNodeId() == 1) {
+            PublicApi api = new PublicApi(cli.getPort(), agreeNode);
 
-                FileLock lock = new FileLock().lock();
-                agreeNode.propose(lock);
-
-                lock = lock.unlock();
-                agreeNode.propose(lock);
-            } else {
-                try {
-                    //run forever
-                    Thread.currentThread().join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            //        PublicApi api = new PublicApi(cli.getPort(), agreeNode);
-//
-//        try {
-//            //run forever
-//            Thread.currentThread().join();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+            //run forever
+            Thread.currentThread().join();
 
         } catch (Exception e) {
             e.printStackTrace();

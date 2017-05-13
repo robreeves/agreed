@@ -46,41 +46,46 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
             //accept value
             acceptorState.setAccepted(accept);
         } else if (seqNumCompare > 0) {
-            //this is unexpected. this means the prepare message was never received for this
-            //sequence number. the proposer should not send an accept message if the prepare
-            //message never received a promise from the acceptor.
-            throw new IllegalStateException(
-                    String.format("no promise received for this sequence number. " +
-                                    "current sequence number: %s, accept received: %s",
-                            accept.sequenceNumber,
-                            accept));
-        }
-        //if the accept sequence number is less don't update the currentAcceptedValue and tell
-        // the proposer
-        //about the higher sequence number that has been accepted
+            //accept value
+            acceptorState.setAccepted(accept);
 
+            //update promised seq number since this is greater than the current promised seq number
+            acceptorState.setPromised(accept.sequenceNumber);
+        }
+
+        //Return the current accepted value.
+        //The proposer will check the sequence number to see if its value was accepted.
         Accepted accepted = new Accepted(acceptorState.getAccepted().sequenceNumber);
         LOGGER.info("Accept: {}\nAccepted: {}\nAcceptor: {}", accept, accepted, this);
         return accepted;
     }
 
     @Override
-    public synchronized void commit(Accept<T> accepted) {
-        //If this is the current accepted value then move it to the committed state.
-        //Other commit values could come from previous rounds so this check is required.
-        //Previous rounds are ignored since this implementation only maintains the current value.
-        int seqNumCompare = Long.compare(accepted.sequenceNumber,
-                acceptorState.getAccepted().sequenceNumber);
+    public synchronized void commit(Accept<T> committed) {
+        int seqNumCompare = Long.compare(committed.sequenceNumber, acceptorState.getPromised());
         if (seqNumCompare == 0) {
-            acceptorState.commitAccepted();
+           //commit value
+            acceptorState.setCommitted(committed);
         } else if (seqNumCompare > 0) {
-            throw new IllegalStateException(
-                    String.format("Commit value greater than any value that has been accepted. " +
-                            "A value cannot be committed without being accepted. " +
-                            "Accepted: %s, This: %s", acceptorState.getAccepted(), accepted));
+            //commit value
+            acceptorState.setCommitted(committed);
+
+            //set promised value since it is greater than the current one
+            acceptorState.setPromised(committed.sequenceNumber);
         }
 
-        LOGGER.info("Commit: {}\nAcceptor: {}", accepted, this);
+        //Clear the current accepted value if this is greater.
+        //Once we've committed a newer value the old accepted value is invalid.
+        //Only the current value is maintained in the implementation.
+        Accept<T> accepted = acceptorState.getAccepted();
+        if (accepted != null) {
+            int accSeqNumCmp = Long.compare(committed.sequenceNumber, accepted.sequenceNumber);
+            if (accSeqNumCmp >= 0) {
+                acceptorState.setAccepted(null);
+            }
+        }
+
+        LOGGER.info("Commit: {}\nAcceptor: {}", committed, this);
     }
 
     @Override

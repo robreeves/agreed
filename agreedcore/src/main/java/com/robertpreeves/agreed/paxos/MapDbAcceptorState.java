@@ -82,9 +82,8 @@ public class MapDbAcceptorState<T> implements PaxosAcceptorState<T> {
     }
 
     @Override
-    public void commitAccepted() {
-        byte[] accepted = mapStore.remove(ACCEPTED);
-        mapStore.put(COMMITTED, accepted);
+    public void setCommitted(Accept<T> committed) {
+        mapStore.put(COMMITTED, serialize(committed));
         db.commit();
     }
 

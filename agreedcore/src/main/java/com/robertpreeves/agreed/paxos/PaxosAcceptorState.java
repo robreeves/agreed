@@ -35,7 +35,7 @@ public interface PaxosAcceptorState<T> extends AutoCloseable {
     Accept<T> getCommitted();
 
     /**
-     * Commits the current accepted value
+     * Sets the current committed value
      */
-    void commitAccepted();
+    void setCommitted(Accept<T> committed);
 }

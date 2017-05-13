@@ -19,6 +19,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Date;
+import java.util.Random;
 
 import spark.Response;
 import spark.Service;
@@ -27,6 +28,7 @@ import static spark.Service.ignite;
 
 public class Api {
     private static final Logger LOGGER = LogManager.getLogger(Api.class);
+    private static final Random RANDOM = new Random();
     private static final Gson GSON = new Gson();
     private static final String URI_TIME = "/api/time";
     private static final String URI_LEADER = "/api/leader/time";
@@ -67,7 +69,7 @@ public class Api {
             String leaderHostPort = agreedNode.getCurrent();
             if (StringUtils.isBlank(leaderHostPort)) {
                 LOGGER.info("No leader. Proposing to be leader ({})...", hostnamePort);
-                leaderHostPort = agreedNode.propose(hostnamePort);
+                leaderHostPort = proposeLeader();
             }
 
             //Get leader time
@@ -76,7 +78,7 @@ public class Api {
             if (timeResponse == null) {
                 LOGGER.info("Leader {} failed. Proposing to be leader ({})...",
                         leaderHostPort, hostnamePort);
-                String newLeaderHostPort = agreedNode.propose(hostnamePort);
+                String newLeaderHostPort = proposeLeader();
 
                 //try to get the time again
                 //it doesnt matter if this host is the leader, just that a leader was chosen
@@ -86,8 +88,8 @@ public class Api {
                     response.status(503);
                     response.type("text/plain");
                     return String.format("Failed after two attempts. " +
-                                            "Could not get time from leader %s and %s",
-                                    leaderHostPort, newLeaderHostPort);
+                                    "Could not get time from leader %s and %s",
+                            leaderHostPort, newLeaderHostPort);
                 }
             }
 
@@ -128,5 +130,18 @@ public class Api {
 
             return timestamp == -1 ? null : new TimeResponse(timestamp, leaderHostPort);
         }
+    }
+
+    private String proposeLeader() throws NoConsensusException {
+        //This is only for demonstration purposes and would not be in a production version of this.
+        //This is used to show how to requests that detect failures handle competing proposals.
+        //For demonstrations two requests are made in synchronously and this random sleeps allow
+        //them to propose a new leader in a random order.
+        try {
+            Thread.sleep(RANDOM.nextInt(25));
+        } catch (InterruptedException e) {
+        }
+
+        return agreedNode.propose(hostnamePort);
     }
 }

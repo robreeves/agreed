@@ -1,8 +1,10 @@
 package com.robertpreeves.lock;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.AgreedNodeFactory;
+
 
 public class Run {
     public static void main(String[] args) {
@@ -11,7 +13,12 @@ public class Run {
                 .addObject(cli)
                 .build();
         cliParser.setProgramName(Run.class.getCanonicalName());
-        cliParser.parse(args);
+
+        try {
+            cliParser.parse(args);
+        } catch (ParameterException e) {
+            System.err.println(e.getMessage());
+        }
 
         if (cli.showHelp()) {
             cliParser.usage();

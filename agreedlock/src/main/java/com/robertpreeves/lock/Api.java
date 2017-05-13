@@ -4,6 +4,7 @@ package com.robertpreeves.lock;
 import com.google.gson.Gson;
 import com.robertpreeves.agreed.AgreedNode;
 import com.robertpreeves.agreed.NoConsensusException;
+import com.robertpreeves.agreed.paxos.ProposalRejectedException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
@@ -19,7 +20,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Date;
-import java.util.Random;
 
 import spark.Response;
 import spark.Service;
@@ -27,7 +27,7 @@ import spark.Service;
 import static spark.Service.ignite;
 
 public class Api {
-    private static final Logger LOGGER = LogManager.getLogger(Api.class);
+    private static final Logger LOGGER = LogManager.getLogger("[APPLICATION]");
     private static final Gson GSON = new Gson();
     private static final String URI_TIME = "/api/time";
     private static final String URI_LEADER = "/api/leader/time";
@@ -65,18 +65,19 @@ public class Api {
 
         try {
             //Get the current leader
+            //If there is no leader then propose to become the leader
             String leaderHostPort = agreedNode.getCurrent();
             if (StringUtils.isBlank(leaderHostPort)) {
-                LOGGER.info("No leader. Proposing to be leader ({})...", hostnamePort);
                 leaderHostPort = proposeLeader();
             }
 
             //Get leader time
             TimeResponse timeResponse;
             timeResponse = getLeaderTime(leaderHostPort);
+
+            //If the leader did not return a time consider it a failure.
+            //Propose to be the leader and get the time from the new leader.
             if (timeResponse == null) {
-                LOGGER.info("Leader {} failed. Proposing to be leader ({})...",
-                        leaderHostPort, hostnamePort);
                 String newLeaderHostPort = proposeLeader();
 
                 //try to get the time again
@@ -132,6 +133,28 @@ public class Api {
     }
 
     private String proposeLeader() throws NoConsensusException {
-        return agreedNode.propose(hostnamePort);
+        String leaderHostnamePort = null;
+        final int ATTEMPT_MAX = 3;
+        for (int i = 0; i < ATTEMPT_MAX; i++) {
+            try {
+                LOGGER.info("Proposing to be leader ({}, attempt {})...",
+                        hostnamePort, i + 1);
+                leaderHostnamePort = agreedNode.propose(hostnamePort);
+            } catch (ProposalRejectedException e) {
+                leaderHostnamePort = agreedNode.getCurrent();
+                LOGGER.info("Leader proposal rejected. Current leader is {}", leaderHostnamePort);
+            }
+
+            if (StringUtils.isNotBlank(leaderHostnamePort)) {
+                break;
+            }
+        }
+
+        if (StringUtils.isBlank(leaderHostnamePort)) {
+            throw new NoConsensusException();
+        }
+
+        LOGGER.info("New leader is {}", leaderHostnamePort);
+        return leaderHostnamePort;
     }
 }

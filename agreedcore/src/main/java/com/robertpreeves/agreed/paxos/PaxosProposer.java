@@ -26,7 +26,7 @@ public class PaxosProposer<T> implements AutoCloseable {
         Prepare prepare = new Prepare(sequenceNumber);
         Promise<T> promise = acceptorsProxy.prepare(prepare);
         if (!promise.promised) {
-            throw new NoConsensusException(String.format("Not accepted as proposer. %s", prepare));
+            throw new ProposalRejectedException(String.format("Not accepted as proposer. %s", prepare));
         } else if (promise.acceptedValue != null) {
             value = promise.acceptedValue.value;
         }
@@ -35,7 +35,7 @@ public class PaxosProposer<T> implements AutoCloseable {
         Accept<T> accept = new Accept(prepare.sequenceNumber, value);
         Accepted accepted = acceptorsProxy.accept(accept);
         if (Long.compareUnsigned(accept.sequenceNumber, accepted.sequenceNumber) != 0) {
-            throw new NoConsensusException("Didn't accept value");
+            throw new ProposalRejectedException();
         }
 
         //commit value

@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 public class MapDbAcceptorState<T> implements PaxosAcceptorState<T> {
-    private static final Logger LOGGER = LogManager.getLogger(MapDbAcceptorState.class);
+    private static final Logger LOGGER = LogManager.getLogger("[ACCEPTOR]");
     private static final Gson GSON = new Gson();
     private static final String PROMISED = "promised";
     private static final String ACCEPTED = "accepted";

@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
-    private static final Logger LOGGER = LogManager.getLogger(LocalPaxosAcceptor.class);
+    private static final Logger LOGGER = LogManager.getLogger("[ACCEPTOR]");
     private final PaxosAcceptorState<T> acceptorState;
 
     public LocalPaxosAcceptor(PaxosAcceptorState<T> acceptorState) {

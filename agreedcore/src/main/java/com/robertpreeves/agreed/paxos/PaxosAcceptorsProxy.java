@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
-    private static final Logger LOGGER = LogManager.getLogger(PaxosAcceptorsProxy.class);
+    private static final Logger LOGGER = LogManager.getLogger("[PROPOSER]");
     private static final Gson GSON = new Gson();
     private final LocalPaxosAcceptor<T> localAcceptor;
     private final Set<String> otherNodes;

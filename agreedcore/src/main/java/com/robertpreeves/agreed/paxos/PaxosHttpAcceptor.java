@@ -18,7 +18,7 @@ import spark.Response;
 import spark.Service;
 
 public class PaxosHttpAcceptor<T> implements AutoCloseable {
-    private static final Logger LOGGER = LogManager.getLogger(PaxosHttpAcceptor.class);
+    private static final Logger LOGGER = LogManager.getLogger("[ACCEPTOR]");
     private static final Gson GSON = new Gson();
     private static final String MIME_JSON = "application/json";
     private final PaxosAcceptor<T> acceptor;

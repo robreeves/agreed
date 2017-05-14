@@ -34,6 +34,12 @@ public class CommandLine {
     private String nodes;
 
     @Parameter(
+            names = "-slow",
+            description = "Adds breakpoints to allow for failure simulations"
+    )
+    private boolean slow;
+
+    @Parameter(
             names = "-help",
             description = "Documentation for this CLI."
     )
@@ -60,6 +66,10 @@ public class CommandLine {
         }
 
         return nodesSet;
+    }
+
+    public boolean isSlow() {
+        return slow;
     }
 
     public boolean showHelp() {

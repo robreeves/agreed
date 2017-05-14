@@ -27,7 +27,10 @@ public class Run {
 
         try (AgreedNode<String> agreeNode =
                      AgreedNodeFactory.create(
-                             cli.getNodeId(), cli.getAgreedPort(), cli.getNodes())) {
+                             cli.getNodeId(),
+                             cli.getAgreedPort(),
+                             cli.getNodes(),
+                             cli.isSlow())) {
 
             Api api = new Api(cli.getPort(), agreeNode);
 

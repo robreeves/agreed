@@ -8,12 +8,16 @@ import com.robertpreeves.agreed.paxos.messages.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.IOException;
+
 public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger("[ACCEPTOR]");
     private final PaxosAcceptorState<T> acceptorState;
+    private final boolean slow;
 
-    public LocalPaxosAcceptor(PaxosAcceptorState<T> acceptorState) {
+    public LocalPaxosAcceptor(PaxosAcceptorState<T> acceptorState, boolean slow) {
         this.acceptorState = acceptorState;
+        this.slow = slow;
     }
 
     /**
@@ -26,6 +30,8 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
 
     @Override
     public synchronized Promise prepare(Prepare prepare) {
+        slowPause("Acceptor before prepare");
+
         Promise<T> promise;
         if (Long.compareUnsigned(prepare.sequenceNumber, acceptorState.getPromised()) > 0) {
             acceptorState.setPromised(prepare.sequenceNumber);
@@ -35,12 +41,15 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
         }
 
         LOGGER.info("Prepare: {}\nPromise: {}\nAcceptorState: {}", prepare, promise, this);
+        slowPause("Acceptor after prepare");
 
         return promise;
     }
 
     @Override
     public synchronized Accepted accept(Accept<T> accept) {
+        slowPause("Acceptor before accept");
+
         int seqNumCompare = Long.compare(accept.sequenceNumber, acceptorState.getPromised());
         if (seqNumCompare == 0) {
             //accept value
@@ -57,11 +66,14 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
         //The proposer will check the sequence number to see if its value was accepted.
         Accepted accepted = new Accepted(acceptorState.getAccepted().sequenceNumber);
         LOGGER.info("Accept: {}\nAccepted: {}\nAcceptorState: {}", accept, accepted, this);
+        slowPause("Acceptor after accept");
         return accepted;
     }
 
     @Override
     public synchronized void commit(Accept<T> committed) {
+        slowPause("Acceptor before commit");
+
         int seqNumCompare = Long.compare(committed.sequenceNumber, acceptorState.getPromised());
         if (seqNumCompare == 0) {
            //commit value
@@ -86,6 +98,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
         }
 
         LOGGER.info("Commit: {}\nAcceptorState: {}", committed, this);
+        slowPause("Acceptor after commit");
     }
 
     @Override
@@ -101,5 +114,16 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     @Override
     public synchronized void close() throws Exception {
         acceptorState.close();
+    }
+
+    private void slowPause(String message) {
+        if (slow) {
+            System.out.println(String.format("***Break***: %s", message));
+            try {
+                System.in.read();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

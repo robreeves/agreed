@@ -6,8 +6,17 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Logger name="[ACCEPTOR]" level="info">
             <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="[PROPOSER]" level="info">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="[APPLICATION]" level="info">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Root level="ERROR">
+            <AppenderRef ref="STDOUT"/>
         </Root>
     </Loggers>
 </Configuration>

@@ -24,7 +24,8 @@ public class AgreedNodeFactory {
     public static <T> AgreedNode<T> create(
             byte nodeId, int port,
             Set<String> otherNodes,
-            boolean slow) {
+            boolean slow,
+            boolean slowP) {
         //validate group size
         if (otherNodes.size() % 2 > 0) {
             throw new IllegalArgumentException("There must be an odd number of total nodes so " +
@@ -35,7 +36,7 @@ public class AgreedNodeFactory {
 
         PaxosAcceptorState acceptorState = new MapDbAcceptorState<>(nodeId);
         LocalPaxosAcceptor localAcceptor = new LocalPaxosAcceptor(acceptorState, slow);
-        PaxosAcceptorsProxy acceptorsProxy = new PaxosAcceptorsProxy(localAcceptor, otherNodes);
+        PaxosAcceptorsProxy acceptorsProxy = new PaxosAcceptorsProxy(localAcceptor, otherNodes, slowP);
         PaxosHttpAcceptor acceptorSvc = new PaxosHttpAcceptor(port, localAcceptor);
         PaxosProposer localProposer = new PaxosProposer(nodeId, acceptorsProxy);
 

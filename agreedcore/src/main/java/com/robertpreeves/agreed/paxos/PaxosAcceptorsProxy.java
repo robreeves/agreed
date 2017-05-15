@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -38,10 +39,15 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private final Set<String> otherNodes;
     private final int majorityCount;
     private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final boolean slow;
 
-    public PaxosAcceptorsProxy(LocalPaxosAcceptor<T> localAcceptor, Set<String> otherNodes) {
+    public PaxosAcceptorsProxy(
+            LocalPaxosAcceptor<T> localAcceptor,
+            Set<String> otherNodes,
+            boolean slow) {
         this.localAcceptor = localAcceptor;
         this.otherNodes = otherNodes;
+        this.slow = slow;
 
         //the total number of nodes must be odd so otherNodes will be even.
         //the majority is half of the otherNodes + 1.
@@ -330,6 +336,8 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 //                                response.getStatusLine());
                         throw new PaxosResponseException();
                     }
+
+                    slowWait("after " + uri);
                 } catch (IOException e) {
 //                    LOGGER.error("Request message failure from {}", uri, e);
                     throw new PaxosResponseException();
@@ -342,5 +350,13 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         });
 
         return futures;
+    }
+
+    private void slowWait(String message) {
+        if (slow) {
+            System.out.println(String.format("***Break***: Proposer %s", message));
+            Scanner s = new Scanner(System.in);
+            s.nextLine();
+        }
     }
 }

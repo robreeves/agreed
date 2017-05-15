@@ -56,7 +56,8 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
 
         Accepted accepted;
         synchronized (this) {
-            int seqNumCompare = Long.compare(accept.sequenceNumber, acceptorState.getPromised());
+            long promised = acceptorState.getPromised();
+            int seqNumCompare = Long.compare(accept.sequenceNumber, promised);
             if (seqNumCompare == 0) {
                 //accept value
                 acceptorState.setAccepted(accept);
@@ -71,7 +72,7 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
 
             //Return the current accepted value.
             //The proposer will check the sequence number to see if its value was accepted.
-            accepted = new Accepted(acceptorState.getAccepted().sequenceNumber);
+            accepted = new Accepted(acceptorState.getPromised());
             LOGGER.info("Accept: {}\nAccepted: {}\nAcceptorState: {}", accept, accepted, this);
         }
 

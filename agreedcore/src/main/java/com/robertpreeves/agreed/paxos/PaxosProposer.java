@@ -13,12 +13,10 @@ public class PaxosProposer<T> implements AutoCloseable {
     private static final Random RANDOM = new Random();
     private final PaxosAcceptorsProxy<T> acceptorsProxy;
     private final byte nodeId;
-    private final boolean slow;
 
-    public PaxosProposer(byte nodeId, PaxosAcceptorsProxy<T> acceptorsProxy, boolean slow) {
+    public PaxosProposer(byte nodeId, PaxosAcceptorsProxy<T> acceptorsProxy) {
         this.nodeId = nodeId;
         this.acceptorsProxy = acceptorsProxy;
-        this.slow = slow;
     }
 
     public synchronized T propose(T value) throws NoConsensusException {
@@ -34,16 +32,12 @@ public class PaxosProposer<T> implements AutoCloseable {
             value = promise.acceptedValue.value;
         }
 
-        slowPause("Proposer after propose");
-
         //accept message
         Accept<T> accept = new Accept(prepare.sequenceNumber, value);
         Accepted accepted = acceptorsProxy.accept(accept);
         if (Long.compareUnsigned(accept.sequenceNumber, accepted.sequenceNumber) != 0) {
             throw new ProposalRejectedException();
         }
-
-        slowPause("Proposer after accept");
 
         //commit value
         acceptorsProxy.commit(accept);
@@ -77,14 +71,6 @@ public class PaxosProposer<T> implements AutoCloseable {
         try {
             Thread.sleep(RANDOM.nextInt(100));
         } catch (InterruptedException e) {
-        }
-    }
-
-    private void slowPause(String message) {
-        if (slow) {
-            System.out.println(String.format("***Break***: %s", message));
-            Scanner s = new Scanner(System.in);
-            s.nextLine();
         }
     }
 }

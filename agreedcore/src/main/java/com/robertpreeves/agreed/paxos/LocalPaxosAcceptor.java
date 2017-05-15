@@ -30,75 +30,87 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     }
 
     @Override
-    public synchronized Promise prepare(Prepare prepare) {
+    public Promise prepare(Prepare prepare) {
         slowPause("Acceptor before prepare");
 
         Promise<T> promise;
-        if (Long.compareUnsigned(prepare.sequenceNumber, acceptorState.getPromised()) > 0) {
-            acceptorState.setPromised(prepare.sequenceNumber);
-            promise = new Promise(true, acceptorState.getAccepted());
-        } else {
-            promise = new Promise(false, null);
+        synchronized (this) {
+            if (Long.compareUnsigned(prepare.sequenceNumber, acceptorState.getPromised()) > 0) {
+                acceptorState.setPromised(prepare.sequenceNumber);
+                promise = new Promise(true, acceptorState.getAccepted());
+            } else {
+                promise = new Promise(false, null);
+            }
+
+            LOGGER.info("Prepare: {}\nPromise: {}\nAcceptorState: {}", prepare, promise, this);
         }
 
-        LOGGER.info("Prepare: {}\nPromise: {}\nAcceptorState: {}", prepare, promise, this);
         slowPause("Acceptor after prepare");
 
         return promise;
     }
 
     @Override
-    public synchronized Accepted accept(Accept<T> accept) {
+    public Accepted accept(Accept<T> accept) {
         slowPause("Acceptor before accept");
 
-        int seqNumCompare = Long.compare(accept.sequenceNumber, acceptorState.getPromised());
-        if (seqNumCompare == 0) {
-            //accept value
-            acceptorState.setAccepted(accept);
-        } else if (seqNumCompare > 0) {
-            //accept value
-            acceptorState.setAccepted(accept);
+        Accepted accepted;
+        synchronized (this) {
+            int seqNumCompare = Long.compare(accept.sequenceNumber, acceptorState.getPromised());
+            if (seqNumCompare == 0) {
+                //accept value
+                acceptorState.setAccepted(accept);
+            } else if (seqNumCompare > 0) {
+                //accept value
+                acceptorState.setAccepted(accept);
 
-            //update promised seq number since this is greater than the current promised seq number
-            acceptorState.setPromised(accept.sequenceNumber);
+                //update promised seq number since this is greater than the current promised seq number
+
+                acceptorState.setPromised(accept.sequenceNumber);
+            }
+
+            //Return the current accepted value.
+            //The proposer will check the sequence number to see if its value was accepted.
+            accepted = new Accepted(acceptorState.getAccepted().sequenceNumber);
+            LOGGER.info("Accept: {}\nAccepted: {}\nAcceptorState: {}", accept, accepted, this);
         }
 
-        //Return the current accepted value.
-        //The proposer will check the sequence number to see if its value was accepted.
-        Accepted accepted = new Accepted(acceptorState.getAccepted().sequenceNumber);
-        LOGGER.info("Accept: {}\nAccepted: {}\nAcceptorState: {}", accept, accepted, this);
         slowPause("Acceptor after accept");
+
         return accepted;
     }
 
     @Override
-    public synchronized void commit(Accept<T> committed) {
+    public void commit(Accept<T> committed) {
         slowPause("Acceptor before commit");
 
-        int seqNumCompare = Long.compare(committed.sequenceNumber, acceptorState.getPromised());
-        if (seqNumCompare == 0) {
-           //commit value
-            acceptorState.setCommitted(committed);
-        } else if (seqNumCompare > 0) {
-            //commit value
-            acceptorState.setCommitted(committed);
+        synchronized (this) {
+            int seqNumCompare = Long.compare(committed.sequenceNumber, acceptorState.getPromised());
+            if (seqNumCompare == 0) {
+                //commit value
+                acceptorState.setCommitted(committed);
+            } else if (seqNumCompare > 0) {
+                //commit value
+                acceptorState.setCommitted(committed);
 
-            //set promised value since it is greater than the current one
-            acceptorState.setPromised(committed.sequenceNumber);
-        }
-
-        //Clear the current accepted value if this is greater.
-        //Once we've committed a newer value the old accepted value is invalid.
-        //Only the current value is maintained in the implementation.
-        Accept<T> accepted = acceptorState.getAccepted();
-        if (accepted != null) {
-            int accSeqNumCmp = Long.compare(committed.sequenceNumber, accepted.sequenceNumber);
-            if (accSeqNumCmp >= 0) {
-                acceptorState.setAccepted(null);
+                //set promised value since it is greater than the current one
+                acceptorState.setPromised(committed.sequenceNumber);
             }
+
+            //Clear the current accepted value if this is greater.
+            //Once we've committed a newer value the old accepted value is invalid.
+            //Only the current value is maintained in the implementation.
+            Accept<T> accepted = acceptorState.getAccepted();
+            if (accepted != null) {
+                int accSeqNumCmp = Long.compare(committed.sequenceNumber, accepted.sequenceNumber);
+                if (accSeqNumCmp >= 0) {
+                    acceptorState.setAccepted(null);
+                }
+            }
+
+            LOGGER.info("Commit: {}\nAcceptorState: {}", committed, this);
         }
 
-        LOGGER.info("Commit: {}\nAcceptorState: {}", committed, this);
         slowPause("Acceptor after commit");
     }
 

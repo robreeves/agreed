@@ -32,6 +32,7 @@ import java.util.concurrent.TimeoutException;
 
 public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger("[PROPOSER]");
+    private static final int TIMEOUT = 180000; //high for demo purposes
     private static final Gson GSON = new Gson();
     private final LocalPaxosAcceptor<T> localAcceptor;
     private final Set<String> otherNodes;
@@ -77,7 +78,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                 promises) {
             Promise<T> promise;
             try {
-                promise = promiseFuture.get(10, TimeUnit.SECONDS);
+                promise = promiseFuture.get(TIMEOUT, TimeUnit.SECONDS);
             } catch (Exception e) {
                 promise = new Promise<>(false, null);
             }
@@ -136,7 +137,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                 accepteds) {
             Accepted accepted = null;
             try {
-                accepted = acceptedFuture.get(10, TimeUnit.SECONDS);
+                accepted = acceptedFuture.get(TIMEOUT, TimeUnit.SECONDS);
             } catch (Exception e) {
             }
 
@@ -177,7 +178,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         int currentCount = 0;
         for (Future<Boolean> commit : commits){
             try {
-                if (commit.get(10, TimeUnit.SECONDS)) {
+                if (commit.get(TIMEOUT, TimeUnit.SECONDS)) {
                     ++currentCount;
                 }
             } catch (Exception e) {
@@ -216,7 +217,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 
             Accept current;
             try {
-                current = currentFuture.get(10, TimeUnit.SECONDS);
+                current = currentFuture.get(TIMEOUT, TimeUnit.SECONDS);
             } catch (Exception e) {
                 continue;
             }

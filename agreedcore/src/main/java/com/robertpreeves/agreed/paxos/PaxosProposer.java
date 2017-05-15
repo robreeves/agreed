@@ -6,8 +6,8 @@ import com.robertpreeves.agreed.paxos.messages.Accepted;
 import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
-import java.io.IOException;
 import java.util.Random;
+import java.util.Scanner;
 
 public class PaxosProposer<T> implements AutoCloseable {
     private static final Random RANDOM = new Random();
@@ -52,7 +52,7 @@ public class PaxosProposer<T> implements AutoCloseable {
 
     }
 
-    public T getCurrent() throws NoConsensusException {
+    public synchronized T getCurrent() throws NoConsensusException {
         Accept<T> acceptedValue = acceptorsProxy.getCurrent();
         if (acceptedValue != null) {
             return acceptedValue.value;
@@ -62,7 +62,7 @@ public class PaxosProposer<T> implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public synchronized void close() throws Exception {
         acceptorsProxy.close();
     }
 
@@ -83,11 +83,8 @@ public class PaxosProposer<T> implements AutoCloseable {
     private void slowPause(String message) {
         if (slow) {
             System.out.println(String.format("***Break***: %s", message));
-            try {
-                System.in.read();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Scanner s = new Scanner(System.in);
+            s.nextLine();
         }
     }
 }

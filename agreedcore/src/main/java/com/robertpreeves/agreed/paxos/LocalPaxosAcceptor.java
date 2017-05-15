@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
+import java.util.Scanner;
 
 public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final Logger LOGGER = LogManager.getLogger("[ACCEPTOR]");
@@ -119,11 +120,8 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
     private void slowPause(String message) {
         if (slow) {
             System.out.println(String.format("***Break***: %s", message));
-            try {
-                System.in.read();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Scanner s = new Scanner(System.in);
+            s.nextLine();
         }
     }
 }

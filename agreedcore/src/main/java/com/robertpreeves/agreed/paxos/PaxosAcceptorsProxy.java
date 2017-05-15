@@ -138,7 +138,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private Accepted reduceAccepteds(long sequenceNumber, List<Future<Accepted>> accepteds) {
         int acceptedCount = 0;
 
-        long highestSequenceNumber = -1;
+        long highestSequenceNumber = 0;
         for (Future<Accepted> acceptedFuture :
                 accepteds) {
             Accepted accepted = null;

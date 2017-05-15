@@ -35,9 +35,15 @@ public class CommandLine {
 
     @Parameter(
             names = "-slow",
-            description = "Adds breakpoints to allow for failure simulations"
+            description = "Adds acceptor breakpoints to allow for failure simulations"
     )
     private boolean slow;
+
+    @Parameter(
+            names = "-slowp",
+            description = "Adds proposer breakpoints to allow for failure simulations"
+    )
+    private boolean slowp;
 
     @Parameter(
             names = "-help",
@@ -70,6 +76,10 @@ public class CommandLine {
 
     public boolean isSlow() {
         return slow;
+    }
+
+    public boolean isSlowp() {
+        return slowp;
     }
 
     public boolean showHelp() {

@@ -30,7 +30,8 @@ public class Run {
                              cli.getNodeId(),
                              cli.getAgreedPort(),
                              cli.getNodes(),
-                             cli.isSlow())) {
+                             cli.isSlow(),
+                             cli.isSlowp())) {
 
             Api api = new Api(cli.getPort(), agreeNode);
 

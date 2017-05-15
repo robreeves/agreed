@@ -262,6 +262,8 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         }
 
         otherNodes.forEach(otherNode -> {
+            slowWait(String.format("***before http://%s%s", otherNode, relativeUri));
+
             Future<TResponse> future = executor.submit(() -> {
                 //Create HTTP request
                 String uri = String.format("http://%s%s", otherNode, relativeUri);
@@ -318,6 +320,8 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                 new StringEntity(GSON.toJson(requestBody), "UTF-8");
 
         otherNodes.forEach(otherNode -> {
+            slowWait(String.format("***before http://%s%s", otherNode, relativeUri));
+
             Future future = executor.submit(() -> {
                 //Create HTTP request
                 String uri = String.format("http://%s%s", otherNode, relativeUri);
@@ -336,8 +340,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 //                                response.getStatusLine());
                         throw new PaxosResponseException();
                     }
-
-                    slowWait("after " + uri);
                 } catch (IOException e) {
 //                    LOGGER.error("Request message failure from {}", uri, e);
                     throw new PaxosResponseException();

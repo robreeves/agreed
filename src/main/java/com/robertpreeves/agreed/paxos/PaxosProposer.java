@@ -7,7 +7,6 @@ import com.robertpreeves.agreed.paxos.messages.Prepare;
 import com.robertpreeves.agreed.paxos.messages.Promise;
 
 import java.util.Random;
-import java.util.Scanner;
 
 public class PaxosProposer<T> implements AutoCloseable {
     private static final Random RANDOM = new Random();

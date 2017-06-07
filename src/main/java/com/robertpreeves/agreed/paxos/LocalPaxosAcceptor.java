@@ -8,7 +8,6 @@ import com.robertpreeves.agreed.paxos.messages.Promise;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
 import java.util.Scanner;
 
 public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {

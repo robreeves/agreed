@@ -33,8 +33,8 @@ public class AgreedNodeFactory {
         }
 
         PaxosAcceptorState acceptorState = new MapDbAcceptorState<>(nodeId);
-        LocalPaxosAcceptor localAcceptor = new LocalPaxosAcceptor(acceptorState, false);
-        PaxosAcceptorsProxy acceptorsProxy = new PaxosAcceptorsProxy(localAcceptor, otherNodes, false);
+        LocalPaxosAcceptor localAcceptor = new LocalPaxosAcceptor(acceptorState);
+        PaxosAcceptorsProxy acceptorsProxy = new PaxosAcceptorsProxy(localAcceptor, otherNodes);
         PaxosHttpAcceptor acceptorSvc = new PaxosHttpAcceptor(port, localAcceptor);
         PaxosProposer localProposer = new PaxosProposer(nodeId, acceptorsProxy);
 

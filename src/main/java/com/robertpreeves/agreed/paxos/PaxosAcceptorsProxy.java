@@ -37,15 +37,12 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private final Set<String> otherNodes;
     private final int majorityCount;
     private final ExecutorService executor = Executors.newCachedThreadPool();
-    private final boolean slow;
 
     public PaxosAcceptorsProxy(
             LocalPaxosAcceptor<T> localAcceptor,
-            Set<String> otherNodes,
-            boolean slow) {
+            Set<String> otherNodes) {
         this.localAcceptor = localAcceptor;
         this.otherNodes = otherNodes;
-        this.slow = slow;
 
         //the total number of nodes must be odd so otherNodes will be even.
         //the majority is half of the otherNodes + 1.
@@ -260,7 +257,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         }
 
         otherNodes.forEach(otherNode -> {
-            slowWait(String.format("***before http://%s%s", otherNode, relativeUri));
 
             Future<TResponse> future = executor.submit(() -> {
                 //Create HTTP request
@@ -288,12 +284,9 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                             responseBody = GSON.fromJson(bufferReader, responseClass);
                         }
                     } else {
-//                        LOGGER.error("Request message failure from {}. {}", uri,
-//                                response.getStatusLine());
                         throw new PaxosResponseException();
                     }
                 } catch (IOException e) {
-//                    LOGGER.error("Request message failure from {}", uri, e);
                     throw new PaxosResponseException();
                 }
 
@@ -318,7 +311,6 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                 new StringEntity(GSON.toJson(requestBody), "UTF-8");
 
         otherNodes.forEach(otherNode -> {
-            slowWait(String.format("***before http://%s%s", otherNode, relativeUri));
 
             Future future = executor.submit(() -> {
                 //Create HTTP request
@@ -334,12 +326,9 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                     //Process response
                     HttpEntity body = response.getEntity();
                     if (response.getStatusLine().getStatusCode() != 200) {
-//                        LOGGER.error("Request message failure from {}. {}", uri,
-//                                response.getStatusLine());
                         throw new PaxosResponseException();
                     }
                 } catch (IOException e) {
-//                    LOGGER.error("Request message failure from {}", uri, e);
                     throw new PaxosResponseException();
                 }
 
@@ -350,13 +339,5 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
         });
 
         return futures;
-    }
-
-    private void slowWait(String message) {
-        if (slow) {
-            System.out.println(String.format("***Break***: Proposer %s", message));
-            Scanner s = new Scanner(System.in);
-            s.nextLine();
-        }
     }
 }

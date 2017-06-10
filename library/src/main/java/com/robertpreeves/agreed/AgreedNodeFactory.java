@@ -10,15 +10,17 @@ import com.robertpreeves.agreed.paxos.PaxosProposer;
 
 import java.util.Set;
 
+/**
+ * Creates nodes to participate in coming to consensus.
+ */
 public class AgreedNodeFactory {
     /**
      * Creates a new agreed node. This is a single node in a cluster of nodes used to achieve
      * consensus.
-     *
-     * @param nodeId     The node Id. This must be unique within the cluster.
-     * @param port       The port that this node will use for internal consensus communication.
-     * @param otherNodes The other nodes in the cluser in the format hostname:port.
-     * @param <T>        The types of values that will be agreed on.
+     * @param nodeId The node Id. This must be unique within the cluster.
+     * @param port The port that this node will use for internal consensus communication.
+     * @param otherNodes The other node endpoints in the cluster (format hostname:port).
+     * @param <T> The type of values that will be agreed upon.
      * @return The local agreed node.
      */
     public static <T> AgreedNode<T> create(

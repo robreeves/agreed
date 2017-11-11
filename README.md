@@ -8,13 +8,13 @@ propose a new value and get the most recent consensus value.
 ```java
 import com.robertpreeves.agreed.*
 
-# Create a node
+// Create a node
 AgreedNode<T> node = AgreedNodeFactory.create(localNodeId, localNodePort, List<URL> otherNodes);
 
-# Propose a value
+// Propose a value
 T acceptedValue = node.propose(newValue);
 
-# Get the current value
+// Get the current value
 T currentValue = node.current();  
 ```
 

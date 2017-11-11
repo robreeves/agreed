@@ -5,14 +5,18 @@ propose a new value and get the most recent consensus value.
 
 # API
 
-todo
+```java
+# Create a node
+AgreedNode<T> node = AgreedNodeFactory.create(localNodeId, localNodePort, Set<Url> otherNodes);
+
+# Propose a value
+# todo
+
+# Get the current value
+# todo
+```
 
 # Disclaimer
 
-This is an academic exercise to learn Paxos. There are areas where performance could be optimized 
-and the service could be hardened (i.e. handle durable state corruption). For a production 
+This is an academic exercise to learn the basics of Paxos. There are many things that could be improved. Performance could be optimized, the service could be hardened (i.e. handle durable state corruption), etc. For a production 
 application there is also the small detail of writing tests...
-
-# Implementation Details
-
-todo

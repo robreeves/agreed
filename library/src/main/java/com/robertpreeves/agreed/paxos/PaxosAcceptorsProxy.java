@@ -182,7 +182,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
                     ++currentCount;
                 }
             } catch (Exception e) {
-
+                LOGGER.error(e);
             }
         }
 
@@ -313,7 +313,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 
             Future future = executor.submit(() -> {
                 //Create HTTP request
-                String uri = String.format("http://%s%s", otherNode, relativeUri);
+                String uri = String.format("http://%s:%s%s", otherNode.getHostName(), otherNode.getPort(), relativeUri);
                 HttpPost request = new HttpPost(uri);
                 request.setHeader("content-type", "application/json");
                 request.setEntity(requestEntity);

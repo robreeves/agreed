@@ -52,7 +52,6 @@ public class LocalPaxosAcceptor<T> implements PaxosAcceptor<T>, AutoCloseable {
             acceptorState.setAccepted(accept);
 
             //update promised seq number since this is greater than the current promised seq number
-
             acceptorState.setPromised(accept.sequenceNumber);
         }
 

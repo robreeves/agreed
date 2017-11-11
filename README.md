@@ -6,6 +6,8 @@ propose a new value and get the most recent consensus value.
 # API
 
 ```java
+import com.robertpreeves.agreed.*
+
 # Create a node
 AgreedNode<T> node = AgreedNodeFactory.create(localNodeId, localNodePort, Set<Url> otherNodes);
 

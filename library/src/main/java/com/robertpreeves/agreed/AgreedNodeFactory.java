@@ -8,7 +8,8 @@ import com.robertpreeves.agreed.paxos.PaxosHttpAcceptor;
 import com.robertpreeves.agreed.paxos.PaxosNode;
 import com.robertpreeves.agreed.paxos.PaxosProposer;
 
-import java.util.Set;
+import java.net.URL;
+import java.util.List;
 
 /**
  * Creates nodes to participate in coming to consensus.
@@ -25,7 +26,7 @@ public class AgreedNodeFactory {
      */
     public static <T> AgreedNode<T> create(
             byte nodeId, int port,
-            Set<String> otherNodes) {
+            List<URL> otherNodes) {
         //validate group size
         if (otherNodes.size() % 2 > 0) {
             throw new IllegalArgumentException("There must be an odd number of total nodes so " +

@@ -20,9 +20,9 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -33,13 +33,13 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final int TIMEOUT = 180000; //high for demo purposes
     private static final Gson GSON = new Gson();
     private final LocalPaxosAcceptor<T> localAcceptor;
-    private final Set<String> otherNodes;
+    private final List<URL> otherNodes;
     private final int majorityCount;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public PaxosAcceptorsProxy(
             LocalPaxosAcceptor<T> localAcceptor,
-            Set<String> otherNodes) {
+            List<URL> otherNodes) {
         this.localAcceptor = localAcceptor;
         this.otherNodes = otherNodes;
 

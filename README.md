@@ -6,10 +6,10 @@ propose a new value and get the most recent consensus value.
 # API
 
 ```java
-import com.robertpreeves.agreed.*
+import com.robertpreeves.agreed.*;
 
 // Create a node
-AgreedNode<T> node = AgreedNodeFactory.create(localNodeId, localNodePort, List<URL> otherNodes);
+AgreedNode<T> node = AgreedNodeFactory.create(localNodeId, localNodePort, otherNodes);
 
 // Propose a value
 T acceptedValue = node.propose(newValue);

@@ -3,7 +3,8 @@ package com.robertpreeves.agreed;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.net.URL;
+import java.net.InetSocketAddress;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -15,14 +16,15 @@ public class AgreedTest {
         int port1 = 7235;
         int port2 = 7236;
 
-        URL url0 = new URL(String.format("http://localhost:%s", port0));
-        URL url1 = new URL(String.format("http://localhost:%s", port1));
-        URL url2 = new URL(String.format("http://localhost:%s", port2));
+        String hostname = "localhost";
+        InetSocketAddress socket0 = new InetSocketAddress(hostname, port0);
+        InetSocketAddress socket1 = new InetSocketAddress(hostname, port1);
+        InetSocketAddress socket2 = new InetSocketAddress(hostname, port2);
 
         try (
-        AgreedNode<Person> node0 = AgreedNodeFactory.create((byte)0, port0, Arrays.asList(url1, url2));
-        AgreedNode<Person> node1 = AgreedNodeFactory.create((byte)1, port1, Arrays.asList(url0, url2));
-        AgreedNode<Person> node2 = AgreedNodeFactory.create((byte)2, port2, Arrays.asList(url0, url1))) {
+        AgreedNode<Person> node0 = AgreedNodeFactory.create((byte)0, port0, Arrays.asList(socket1, socket2));
+        AgreedNode<Person> node1 = AgreedNodeFactory.create((byte)1, port1, Arrays.asList(socket0, socket2));
+        AgreedNode<Person> node2 = AgreedNodeFactory.create((byte)2, port2, Arrays.asList(socket0, socket1))) {
 
             // Propose a value
             Person john = new Person("john", 40);

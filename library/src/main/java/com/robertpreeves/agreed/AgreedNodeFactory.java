@@ -8,6 +8,7 @@ import com.robertpreeves.agreed.paxos.PaxosHttpAcceptor;
 import com.robertpreeves.agreed.paxos.PaxosNode;
 import com.robertpreeves.agreed.paxos.PaxosProposer;
 
+import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.List;
 
@@ -26,7 +27,7 @@ public class AgreedNodeFactory {
      */
     public static <T> AgreedNode<T> create(
             byte nodeId, int port,
-            List<URL> otherNodes) {
+            List<InetSocketAddress> otherNodes) {
         //validate group size
         if (otherNodes.size() % 2 > 0) {
             throw new IllegalArgumentException("There must be an odd number of total nodes so " +

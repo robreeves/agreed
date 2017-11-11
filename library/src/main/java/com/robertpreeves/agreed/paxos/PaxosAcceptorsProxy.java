@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -33,13 +33,13 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
     private static final int TIMEOUT = 180000; //high for demo purposes
     private static final Gson GSON = new Gson();
     private final LocalPaxosAcceptor<T> localAcceptor;
-    private final List<URL> otherNodes;
+    private final List<InetSocketAddress> otherNodes;
     private final int majorityCount;
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
     public PaxosAcceptorsProxy(
             LocalPaxosAcceptor<T> localAcceptor,
-            List<URL> otherNodes) {
+            List<InetSocketAddress> otherNodes) {
         this.localAcceptor = localAcceptor;
         this.otherNodes = otherNodes;
 
@@ -259,7 +259,7 @@ public class PaxosAcceptorsProxy<T> implements PaxosAcceptor<T>, AutoCloseable {
 
             Future<TResponse> future = executor.submit(() -> {
                 //Create HTTP request
-                String uri = String.format("http://%s%s", otherNode, relativeUri);
+                String uri = String.format("http://%s:%s%s", otherNode.getHostName(), otherNode.getPort(), relativeUri);
                 HttpPost request = new HttpPost(uri);
 
                 if (requestEntity != null) {

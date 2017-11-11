@@ -10,10 +10,10 @@ propose a new value and get the most recent consensus value.
 AgreedNode<T> node = AgreedNodeFactory.create(localNodeId, localNodePort, Set<Url> otherNodes);
 
 # Propose a value
-# todo
+T acceptedValue = node.propose(newValue);
 
 # Get the current value
-# todo
+T currentValue = node.current();  
 ```
 
 # Disclaimer

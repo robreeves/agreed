@@ -15,13 +15,13 @@ import java.util.Set;
  */
 public class AgreedNodeFactory {
     /**
-     * Creates a new agreed node. This is a single node in a cluster of nodes used to achieve
+     * Creates a new consensus node. This is a single node in a cluster of nodes used to achieve
      * consensus.
      * @param nodeId The node Id. This must be unique within the cluster.
      * @param port The port that this node will use for internal consensus communication.
      * @param otherNodes The other node endpoints in the cluster (format hostname:port).
      * @param <T> The type of values that will be agreed upon.
-     * @return The local agreed node.
+     * @return The local consensus node.
      */
     public static <T> AgreedNode<T> create(
             byte nodeId, int port,

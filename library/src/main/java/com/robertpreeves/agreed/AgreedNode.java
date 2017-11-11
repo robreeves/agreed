@@ -20,5 +20,5 @@ public interface AgreedNode<T> extends AutoCloseable {
      * @return The most recent consensus value. Returns null if a value has never been proposed.
      * @throws NoConsensusException Thrown when a consensus cannot be reached for what the current value is.
      */
-    T getCurrent() throws NoConsensusException;
+    T current() throws NoConsensusException;
 }

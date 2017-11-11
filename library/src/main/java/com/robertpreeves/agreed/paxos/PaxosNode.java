@@ -21,7 +21,7 @@ public class PaxosNode<T> implements AgreedNode<T> {
     }
 
     @Override
-    public T getCurrent() throws NoConsensusException {
+    public T current() throws NoConsensusException {
         return proposer.getCurrent();
     }
 

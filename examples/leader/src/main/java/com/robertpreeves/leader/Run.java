@@ -15,9 +15,10 @@ public class Run {
         //todo get other nodes (-nodes host:port,host:port)
         Set<String> otherNodes = new HashSet<>();
 
-        AgreedNode<Leader> node = AgreedNodeFactory.create(
-                nodeId,
-                7220,
-                otherNodes);
+//        AgreedNode<com.robertpreeves.leader.Leader> node = AgreedNodeFactory.create(
+//                nodeId,
+//                7220,
+//                otherNodes,
+//                );
     }
 }

@@ -22,9 +22,12 @@ public class AgreedTest {
         InetSocketAddress socket2 = new InetSocketAddress(hostname, port2);
 
         try (
-        AgreedNode<Person> node0 = AgreedNodeFactory.create((byte)0, port0, Arrays.asList(socket1, socket2));
-        AgreedNode<Person> node1 = AgreedNodeFactory.create((byte)1, port1, Arrays.asList(socket0, socket2));
-        AgreedNode<Person> node2 = AgreedNodeFactory.create((byte)2, port2, Arrays.asList(socket0, socket1))) {
+            AgreedNode<Person> node0 =
+                    AgreedNodeFactory.create((byte)0, port0, Arrays.asList(socket1, socket2), Person.class);
+            AgreedNode<Person> node1 =
+                    AgreedNodeFactory.create((byte)1, port1, Arrays.asList(socket0, socket2), Person.class);
+            AgreedNode<Person> node2 =
+                    AgreedNodeFactory.create((byte)2, port2, Arrays.asList(socket0, socket1), Person.class)) {
 
             // Propose a value
             Person john = new Person("john", 40);

@@ -9,7 +9,7 @@ propose a new value and get the most recent consensus value.
 import com.robertpreeves.agreed.*;
 
 // Create a node
-AgreedNode<T> node = AgreedNodeFactory.create(localNodeId, localNodePort, otherNodes);
+AgreedNode<T> node = AgreedNodeFactory.create(localNodeId, localNodePort, otherNodes, T.class);
 
 // Propose a value
 T acceptedValue = node.propose(newValue);

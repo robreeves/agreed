@@ -18,10 +18,6 @@ T acceptedValue = node.propose(newValue);
 T currentValue = node.current();  
 ```
 
-# Logging
-
-todo. reminder to describe logging.
-
 # Disclaimer
 
 This is an academic exercise to learn the basics of Paxos. There are many things that could be improved. Performance could be optimized, the service could be hardened (i.e. handle durable state corruption), etc. For a production 

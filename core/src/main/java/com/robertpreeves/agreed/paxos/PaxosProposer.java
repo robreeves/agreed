@@ -61,8 +61,8 @@ public class PaxosProposer<T> implements AutoCloseable {
 
     /**
      * Waits for a random amount of time.
-     * This is used to reduce the chances of proposers always superseding an in progress proposal.
-     * This scenario prevents a value for ever making to the the commit phase.
+     * This is used to reduce the chances of proposers always superseding an in-progress proposal.
+     * This scenario prevents a value from ever making it to the the commit phase.
      * The wait should make it so a proposal has time to get to the commit state and no pattern
      * of propose, get superseded, try to propose again, get superseded,... occurs.
      */
